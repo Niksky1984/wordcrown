@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WordCrown">
+<meta name="theme-color" content="#0f0b1a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>WordCrown</title>
+<style>
+:root{
+  --bg:#0f0b1a; --bg2:#151024; --surface:#1b1530; --surface2:#251d3d; --line:rgba(255,255,255,.08);
+  --text:#f5effc; --muted:#a798bf; --faint:#6f6388;
+  --gold:#ecbf7a; --gold2:#f7dcae; --rose:#f2a0ba; --violet:#9b7dff;
+  --good:#86e3bd; --bad:#ff9a9a;
+  --serif: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
+  --sans: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --r:22px; --st: env(safe-area-inset-top,0px); --sb: env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overscroll-behavior:none}
+body{background:radial-gradient(120% 60% at 50% -10%,#2a1846 0%,var(--bg) 60%) fixed;-webkit-font-smoothing:antialiased;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.hidden{display:none!important}
+h1,h2,h3{margin:0;font-weight:600}
+.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* ---------- layout ---------- */
+#views{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--st) + 18px) 18px calc(var(--sb) + 96px)}
+.view{display:none;max-width:560px;margin:0 auto;animation:rise .35s ease}
+.view.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:8px 10px calc(var(--sb) + 6px);background:rgba(15,11,26,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);z-index:5}
+#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint);padding:4px 0}
+#tabbar button svg{width:24px;height:24px}
+#tabbar button.on{color:var(--gold)}
+.v-head{display:flex;align-items:flex-end;justify-content:space-between;margin:6px 0 16px}
+.v-head h1{font-family:var(--serif);font-size:32px;letter-spacing:-.01em}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;border-radius:18px;font-weight:700;font-size:17px;color:#24170a;background:linear-gradient(135deg,var(--gold2),var(--gold) 55%,#d99a55);box-shadow:0 10px 30px -10px rgba(236,191,122,.6)}
+.primary:active{transform:scale(.98)}
+.primary[disabled]{opacity:.4;box-shadow:none}
+.ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:16px;font-weight:600;background:var(--surface2);border:1px solid var(--line)}
+.ghost.danger{color:var(--bad)}
+.pill-btn{height:36px;padding:0 14px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-weight:600;font-size:14px}
+.pill-btn.on{background:var(--gold);color:#24170a;border-color:transparent}
+
+/* ---------- home ---------- */
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;margin:4px 0 18px}
+.h-top h1{font-family:var(--serif);font-size:34px;line-height:1.05;margin-top:6px;letter-spacing:-.01em}
+.streak{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:14px;white-space:nowrap}
+.streak svg{width:16px;height:16px;color:var(--rose)}
+.lvl-card{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:14px;border-radius:var(--r);background:linear-gradient(135deg,#2c1f4a,#1d1631);border:1px solid rgba(236,191,122,.25);margin-bottom:14px;position:relative;overflow:hidden}
+.lvl-card:after{content:"";position:absolute;inset:-40% -20% auto auto;width:180px;height:180px;background:radial-gradient(circle,rgba(236,191,122,.22),transparent 65%)}
+.lvl-img{width:78px;height:78px;border-radius:18px;flex:none;overflow:hidden;background:#140f22;display:grid;place-items:center}
+.lvl-img img{width:100%;height:100%;object-fit:cover}
+.lvl-info{flex:1;min-width:0}
+.lvl-name{font-family:var(--serif);font-size:21px;margin:3px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--rose),var(--gold));transition:width .6s}
+.sub{font-size:12.5px;color:var(--muted);margin-top:7px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 12px 11px}
+.tile b{display:block;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tile span{font-size:12px;color:var(--muted)}
+.len-row{display:flex;justify-content:space-between;align-items:baseline}
+.len-row .val{font-family:var(--serif);font-size:30px}
+.len-row .val small{font-family:var(--sans);font-size:14px;color:var(--muted);margin-left:4px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;margin:6px 0 0}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:9px;background:linear-gradient(90deg,var(--gold) var(--p,25%),rgba(255,255,255,.1) var(--p,25%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;margin-top:-11px;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);padding:0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12.5px;padding:6px 10px;border-radius:99px;background:var(--surface2);color:var(--muted);font-weight:600}
+.empty{text-align:center;padding:28px 18px}
+.empty h2{font-family:var(--serif);font-size:24px;margin:10px 0 8px}
+.empty p{color:var(--muted);margin:0 0 18px;line-height:1.45}
+
+/* ---------- words ---------- */
+.search{width:100%;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 14px;font-size:16px;margin-bottom:12px;outline:none}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:3px;gap:2px;margin-bottom:12px}
+.seg button{flex:1;height:34px;border-radius:11px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button.on{background:var(--surface2);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+.seg button small{opacity:.6;margin-left:3px;font-weight:500}
+.pickbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:rgba(236,191,122,.12);border:1px solid rgba(236,191,122,.3);margin-bottom:12px;font-size:14px}
+.pickbar b{flex:1}
+.pickbar button{font-weight:700;color:var(--gold);font-size:13.5px;padding:4px 6px}
+.wlist{list-style:none;margin:0;padding:0}
+.wrow{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.thumb{width:52px;height:52px;border-radius:14px;flex:none;background:var(--surface2) center/cover no-repeat}
+.wtxt{flex:1;min-width:0}
+.wen{font-family:var(--serif);font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wipa{font-family:var(--sans);font-size:13px;color:var(--faint);margin-left:6px}
+.wru{color:var(--muted);font-size:14.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st{font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap}
+.st-new{background:rgba(155,125,255,.16);color:#c6b5ff}
+.st-progress{background:rgba(242,160,186,.15);color:var(--rose)}
+.st-learned{background:rgba(236,191,122,.16);color:var(--gold)}
+.check{width:26px;height:26px;border-radius:50%;border:2px solid var(--faint);flex:none;display:grid;place-items:center}
+.check.on{background:var(--gold);border-color:var(--gold)}
+.check.on:after{content:"";width:10px;height:6px;border:2.5px solid #24170a;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.more{text-align:center;color:var(--muted);padding:16px;font-size:14px}
+
+/* ---------- progress ---------- */
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.06);gap:2px}
+.stack div{height:100%}
+.path{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.node{flex:none;width:76px;text-align:center;scroll-snap-align:center}
+.node .ring{width:68px;height:68px;margin:0 auto 6px;border-radius:50%;padding:3px;background:var(--surface2);position:relative}
+.node.done .ring{background:linear-gradient(135deg,var(--gold2),var(--gold))}
+.node.cur .ring{background:conic-gradient(var(--rose),var(--gold),var(--rose));animation:spin 6s linear infinite}
+.node .in{width:100%;height:100%;border-radius:50%;overflow:hidden;background:#140f22;display:grid;place-items:center;font-weight:700;color:var(--faint)}
+.node.cur .in{animation:spin 6s linear infinite reverse}
+.node .in img{width:100%;height:100%;object-fit:cover}
+.node.locked .in{filter:grayscale(1) brightness(.5)}
+.node span{font-size:11px;color:var(--muted);line-height:1.2;display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero{text-align:center;padding:22px 16px 18px;background:linear-gradient(180deg,#2c1f4a,#1b1530);border-color:rgba(236,191,122,.25)}
+.hero .lvl-img{width:132px;height:132px;border-radius:30px;margin:0 auto 14px;box-shadow:0 20px 50px -15px rgba(236,191,122,.45)}
+.hero h2{font-family:var(--serif);font-size:28px;margin:4px 0 12px}
+
+/* ---------- settings ---------- */
+.set-group{margin-bottom:22px}
+.set-group>.kicker{margin:0 4px 8px}
+.set{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);min-height:54px}
+.set-row:last-child{border-bottom:0}
+.set-row.col{flex-direction:column;align-items:stretch}
+.set-row label,.set-row .lab{font-weight:600;font-size:15.5px}
+.set-row .hint{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:400}
+.set-row input[type=text],.set-row input[type=number],.set-row select{background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:12px;height:40px;padding:0 12px;font-size:16px;outline:none;min-width:0}
+.set-row input[type=text]{width:55%;text-align:right}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:36px;height:36px;border-radius:12px;background:var(--surface2);font-size:20px;font-weight:600}
+.stepper b{min-width:28px;text-align:center;font-size:18px}
+.toggle{width:52px;height:32px;border-radius:99px;background:var(--surface2);position:relative;flex:none;transition:.2s}
+.toggle:after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on{background:var(--gold)}
+.toggle.on:after{left:23px}
+.mini-chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.mini-chips button{height:34px;padding:0 14px;border-radius:10px;background:var(--surface2);font-weight:600;font-size:14px}
+.mini-chips button.on{background:var(--gold);color:#24170a}
+.mini-chips input{width:76px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--text);text-align:center;font-size:16px}
+.foot{text-align:center;color:var(--faint);font-size:12px;padding:6px 0 20px}
+
+/* ---------- session ---------- */
+#session{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;background:radial-gradient(130% 70% at 50% 0%,#2b1947 0%,var(--bg) 62%);padding:calc(var(--st) + 8px) 16px calc(var(--sb) + 14px)}
+.s-top{display:flex;align-items:center;justify-content:space-between;height:52px;flex:none}
+.icon-btn{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.icon-btn svg{width:20px;height:20px}
+.s-timer{display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums;font-weight:700;font-size:19px}
+.s-timer svg{width:30px;height:30px;transform:rotate(-90deg)}
+.s-count{min-width:42px;text-align:right;color:var(--muted);font-size:13px;font-weight:600}
+.s-count b{color:var(--text);font-size:16px}
+.s-stage{flex:1;min-height:0;display:flex;padding:10px 0 14px;perspective:1400px}
+.card{position:relative;flex:1;transition:transform .2s ease,opacity .2s ease}
+.card .inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+.card.flipped .inner{transform:rotateY(180deg)}
+.card.noanim .inner{transition:none}
+.card.out{opacity:0;transform:translateX(-30px) scale(.97)}
+.card.pre{opacity:0;transform:translateX(30px) scale(.97);transition:none}
+.face{position:absolute;inset:0;border-radius:28px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:linear-gradient(165deg,#2a2045 0%,#1a1430 100%);box-shadow:0 30px 60px -25px rgba(0,0,0,.7)}
+.back{transform:rotateY(180deg);display:flex;flex-direction:column}
+.front{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 22px}
+.front:before{content:"";position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 38%,rgba(236,191,122,.12),transparent 70%)}
+.ftag{position:absolute;top:18px;left:0;right:0;display:flex;justify-content:center;gap:6px}
+.ftag span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted);padding:6px 10px;border-radius:99px;background:rgba(255,255,255,.05)}
+.ftag span.rv{color:var(--gold);background:rgba(236,191,122,.12)}
+.big-word{font-family:var(--serif);font-size:clamp(38px,12vw,58px);line-height:1.05;letter-spacing:-.015em;position:relative;word-break:break-word}
+.big-ipa{font-size:20px;color:var(--muted);margin-top:12px;position:relative}
+.speak{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(236,191,122,.14);color:var(--gold);margin-top:22px;position:relative}
+.speak svg{width:24px;height:24px}
+.speak.sm{width:40px;height:40px;margin:0;flex:none}
+.speak.sm svg{width:19px;height:19px}
+.front .ask{position:absolute;bottom:22px;left:0;right:0;font-size:14px;color:var(--faint)}
+.b-img{position:relative;flex:none;height:min(38vh,300px);background:#120d1f}
+.b-img img{width:100%;height:100%;object-fit:cover;display:block}
+.b-img:after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(transparent,#251c3e)}
+.res{position:absolute;top:14px;right:14px;z-index:2;font-weight:800;font-size:13px;padding:7px 11px;border-radius:99px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.res.up{background:rgba(236,191,122,.9);color:#24170a}
+.res.down{background:rgba(242,160,186,.92);color:#2a0f19}
+.res.win{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#24170a;animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.3)}100%{transform:scale(1)}}
+.b-body{flex:1;overflow-y:auto;padding:4px 20px 18px;display:flex;flex-direction:column;gap:12px}
+.b-head{display:flex;align-items:center;gap:12px}
+.b-head>div{flex:1;min-width:0}
+.b-en{font-family:var(--serif);font-size:32px;line-height:1.1;letter-spacing:-.01em;word-break:break-word}
+.b-ipa{color:var(--muted);font-size:16px;margin-top:3px}
+.b-ru{font-family:var(--serif);font-size:26px;color:var(--gold2)}
+.b-ex{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.b-ex p{margin:0;flex:1;font-size:16.5px;line-height:1.45;color:#ddd3ee;font-style:italic;font-family:var(--serif)}
+.b-ex mark{background:none;color:var(--gold);font-weight:700;font-style:normal}
+.b-prog{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-weight:600;margin-top:auto}
+.pips{display:flex;gap:5px}
+.pips i{width:20px;height:6px;border-radius:9px;background:rgba(255,255,255,.12)}
+.pips i.on{background:linear-gradient(90deg,var(--rose),var(--gold))}
+.s-actions{flex:none}
+.ans-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ans{position:relative;aspect-ratio:16/9;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.12);transition:transform .15s}
+.ans:active{transform:scale(.96)}
+.anim{position:absolute;inset:0}
+.anim img,.anim video{width:100%;height:100%;object-fit:cover;display:block}
+.ans .lbl{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;font-weight:800;font-size:16px;letter-spacing:.01em;background:linear-gradient(transparent,rgba(10,6,20,.78));text-shadow:0 1px 6px rgba(0,0,0,.5)}
+/* default animations (until custom GIFs are supplied) */
+.def-know{background:linear-gradient(120deg,#f7dcae,#ecbf7a 30%,#d58f4c 60%,#f7dcae);background-size:300% 100%;animation:shine 4s linear infinite}
+.def-recall{background:linear-gradient(120deg,#6d4fd8,#b86fbf 35%,#f2a0ba 65%,#6d4fd8);background-size:300% 100%;animation:shine 5s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.def-know:before,.def-recall:before{position:absolute;top:22%;left:0;right:0;text-align:center;font-size:30px;animation:bob 2s ease-in-out infinite}
+.def-know:before{content:"✦";color:#fff8e9}
+.def-recall:before{content:"?";font-family:var(--serif);font-weight:700;color:#fff}
+@keyframes bob{50%{transform:translateY(-6px) scale(1.12)}}
+.next-row{display:flex;flex-direction:column;gap:6px}
+.next-row .primary{height:60px}
+.oops{font-size:13.5px;color:var(--muted);font-weight:600;padding:8px;align-self:center}
+
+/* ---------- sheets & overlays ---------- */
+.scrim{position:fixed;inset:0;background:rgba(5,3,10,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.scrim.center{align-items:center;padding:20px}
+@keyframes fade{from{opacity:0}}
+.sheet{width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--bg2);border-radius:28px 28px 0 0;border:1px solid var(--line);padding:10px 18px calc(var(--sb) + 18px);animation:up .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(100%)}}
+.grab{width:40px;height:5px;border-radius:9px;background:rgba(255,255,255,.2);margin:0 auto 12px}
+.sheet .s-img{position:relative;height:200px;border-radius:20px;overflow:hidden;background:var(--surface2) center/cover no-repeat;margin-bottom:14px}
+.sheet .s-img button{position:absolute;right:10px;bottom:10px;height:34px;padding:0 12px;border-radius:99px;background:rgba(15,11,26,.75);backdrop-filter:blur(10px);font-size:13px;font-weight:700}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 6px 2px}
+.field input,.field textarea{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;outline:none;resize:none}
+.field input:focus,.field textarea:focus{border-color:rgba(236,191,122,.5)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.dlg{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--line);border-radius:26px;padding:22px;text-align:center;animation:pop .35s cubic-bezier(.3,1.4,.5,1)}
+.dlg h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
+.dlg p{color:var(--muted);line-height:1.45;margin:0 0 18px}
+.rw{width:100%;max-width:420px;text-align:center;position:relative;z-index:2}
+.rw h2{font-family:var(--serif);font-size:30px;margin:8px 0 6px}
+.rw .meta{color:var(--muted);margin-bottom:18px}
+.rw-media{position:relative;width:100%;aspect-ratio:1/1;border-radius:28px;overflow:hidden;background:#120d1f;margin-bottom:16px;box-shadow:0 30px 70px -20px rgba(236,191,122,.45);border:1px solid rgba(236,191,122,.3)}
+.rw-media video,.rw-media img{width:100%;height:100%;object-fit:cover;display:block}
+.rw-play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,6,20,.35)}
+.rw-play span{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;animation:pulse 1.6s ease-in-out infinite}
+.rw-play svg{width:34px;height:34px;color:#24170a;margin-left:5px}
+@keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 0 14px rgba(255,255,255,.12)}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:8px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+#toast{position:fixed;left:50%;bottom:calc(var(--sb) + 100px);transform:translateX(-50%) translateY(20px);opacity:0;background:#2d2347;border:1px solid rgba(255,255,255,.12);padding:12px 18px;border-radius:16px;font-weight:600;font-size:14.5px;z-index:60;transition:.3s;pointer-events:none;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<main id="views">
+  <section class="view active" id="v-home"></section>
+  <section class="view" id="v-words"></section>
+  <section class="view" id="v-progress"></section>
+  <section class="view" id="v-settings"></section>
+</main>
+
+<nav id="tabbar">
+  <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 3 8l5 4 4-7 4 7 5-4-1 10z"/><path d="M5 21h14"/></svg>Home</button>
+  <button data-tab="words"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="13" height="17" rx="2.5"/><path d="M3.5 6.5v12A2.5 2.5 0 0 0 6 21h9"/><path d="M10 9h5M10 13h3"/></svg>Words</button>
+  <button data-tab="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progress</button>
+  <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+</nav>
+
+<div id="session" class="hidden">
+  <header class="s-top">
+    <button class="icon-btn" data-action="end-session" aria-label="End session"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="s-timer"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4"/><circle id="ring" cx="18" cy="18" r="15" fill="none" stroke="url(#rg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="0"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#f2a0ba"/><stop offset="1" stop-color="#ecbf7a"/></linearGradient></defs></svg><span id="s-time">15:00</span></div>
+    <div class="s-count"><b id="s-cards">0</b> <span id="s-cards-l">cards</span></div>
+  </header>
+  <div class="s-stage"><div class="card" id="card"><div class="inner"><div class="face front" id="front"></div><div class="face back" id="back"></div></div></div></div>
+  <div class="s-actions">
+    <div class="ans-row" id="ans-row">
+      <button class="ans" data-action="know"><div class="anim" id="anim-know"></div><span class="lbl">I know it</span></button>
+      <button class="ans" data-action="recall"><div class="anim" id="anim-recall"></div><span class="lbl">I can't recall</span></button>
+    </div>
+    <div class="next-row hidden" id="next-row">
+      <button class="primary" data-action="next">Next card <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="oops" id="oops" data-action="oops">Actually, I got it wrong</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="f-import" accept=".json,application/json,text/plain" hidden>
+<input type="file" id="f-image" accept="image/*" hidden>
+
+<script>
+'use strict';
+/* =========================================================
+   WordCrown — English word cards (PWA)
+   Storage: IndexedDB  ·  Pool files: JSON (format "wordcrown")
+   ========================================================= */
+const APP_VERSION = '1.0';
+const DAY = 86400000;
+const REVIEW_DAYS = [2, 5, 12, 30, 60, 120];   // learned-word review spacing
+const ACTIVE_CAP = 20;                           // working set size when studying "All"
+const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Grand Empress','Empress of Tongues','Empress of Words'];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const ymd = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- IndexedDB ---------- */
+let db;
+function openDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('wordcrown', 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('words', { keyPath: 'id' }); d.createObjectStore('kv'); d.createObjectStore('blobs'); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+function tx(store, mode, fn) {
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode); let out;
+    const s = Array.isArray(store) ? store.map(n => t.objectStore(n)) : t.objectStore(store);
+    out = fn(s); t.oncomplete = () => res(out instanceof IDBRequest ? out.result : out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  });
+}
+const kvGet = k => tx('kv', 'readonly', s => s.get(k));
+const kvSet = (k, v) => tx('kv', 'readwrite', s => { s.put(v, k); });
+const blobGet = k => tx('blobs', 'readonly', s => s.get(k));
+const blobSet = (k, v) => tx('blobs', 'readwrite', s => { s.put(v, k); });
+const blobDel = k => tx('blobs', 'readwrite', s => { s.delete(k); });
+const saveWord = w => tx('words', 'readwrite', s => { s.put(w); });
+
+/* ---------- state ---------- */
+let words = [];            // all words, sorted by order
+let S = {};                // settings
+let ST = { days: {} };     // stats
+let LV = { names: DEFAULT_LEVEL_NAMES.slice(), per: 100 };
+const imgCache = new Map(); // key -> objectURL
+let tab = 'home', wordFilter = 'all', wordQuery = '', pickMode = false, wordLimit = 120;
+const DEFAULTS = { name: '', minutes: 15, direction: 'mix', scope: 'all', firstN: 10, target: 5, autoSpeak: true, voiceURI: '', rate: 0.9, picked: [], maxLevelSeen: 1 };
+
+const byId = id => words.find(w => w.id === id);
+const status = w => w.learned ? 'learned' : (w.seen ? 'progress' : 'new');
+const learnedCount = () => words.reduce((n, w) => n + (w.learned ? 1 : 0), 0);
+function day(k = ymd()) { return ST.days[k] || (ST.days[k] = { ms: 0, mastered: 0, cards: 0 }); }
+const saveSettings = () => kvSet('settings', S);
+let statsDirty = false;
+const saveStats = () => { statsDirty = false; return kvSet('stats', ST); };
+
+function levelInfo(n = learnedCount()) {
+  const per = LV.per || 100, max = 20;
+  const lvl = Math.min(max, Math.floor(n / per) + 1);
+  const done = n >= per * max;
+  const inLvl = done ? per : n - (lvl - 1) * per;
+  return { lvl, inLvl, per, done, name: LV.names[lvl - 1] || `Level ${lvl}`, total: n };
+}
+function streak() {
+  let n = 0, d = new Date();
+  if (!(ST.days[ymd(d)]?.ms >= 60000)) d.setDate(d.getDate() - 1);
+  while (ST.days[ymd(d)]?.ms >= 60000) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+/* ---------- media ---------- */
+async function imgURL(key) {
+  if (imgCache.has(key)) return imgCache.get(key);
+  const b = await blobGet(key); const u = b ? URL.createObjectURL(b) : null;
+  imgCache.set(key, u); return u;
+}
+function dropURL(key) { const u = imgCache.get(key); if (u) URL.revokeObjectURL(u); imgCache.delete(key); }
+async function mediaEl(key, cls = '') {
+  const b = await blobGet('media:' + key); if (!b) return '';
+  const u = await imgURL('media:' + key);
+  return /^video/.test(b.type) ? `<video class="${cls}" src="${u}" autoplay muted loop playsinline></video>` : `<img class="${cls}" src="${u}" alt="">`;
+}
+function crownSVG(lvl) {
+  const t = (lvl - 1) / 19, s = 0.55 + t * 0.4;
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><linearGradient id="cg${lvl}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7dcae"/><stop offset="1" stop-color="#d99a55"/></linearGradient></defs><g transform="translate(50 54) scale(${s}) translate(-50 -50)"><path d="M18 70 14 34l18 16 18-28 18 28 18-16-4 36z" fill="url(#cg${lvl})"/><rect x="18" y="73" width="64" height="9" rx="3" fill="url(#cg${lvl})"/><circle cx="14" cy="31" r="5" fill="#f7dcae"/><circle cx="50" cy="19" r="5" fill="#f7dcae"/><circle cx="86" cy="31" r="5" fill="#f7dcae"/><circle cx="50" cy="56" r="${4 + t * 3}" fill="#f2a0ba"/></g></svg>`;
+}
+async function levelArt(lvl) {
+  const u = await imgURL('media:level:' + lvl);
+  return u ? `<img src="${u}" alt="">` : crownSVG(lvl);
+}
+
+/* ---------- speech (British English) ---------- */
+const canSpeak = 'speechSynthesis' in window;
+function gbVoices() { return canSpeak ? speechSynthesis.getVoices().filter(v => /^en[-_]GB/i.test(v.lang)) : []; }
+function pickVoice() {
+  const gb = gbVoices();
+  return gb.find(v => v.voiceURI === S.voiceURI) || gb.find(v => /Daniel|Kate|Serena|Arthur|Martha|Stephanie|Oliver/i.test(v.name)) || gb[0];
+}
+function speak(text) {
+  if (!canSpeak || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); const v = pickVoice();
+  if (v) u.voice = v; u.lang = 'en-GB'; u.rate = S.rate || 0.9;
+  speechSynthesis.speak(u);
+}
+if (canSpeak) speechSynthesis.onvoiceschanged = () => { if (tab === 'settings') renderSettings(); };
+
+/* ---------- toast & dialogs ---------- */
+let toastT;
+function toast(msg, ms = 2600) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+let overlayOpen = 0;
+function openScrim(html, center = true) {
+  const sc = document.createElement('div'); sc.className = 'scrim' + (center ? ' center' : ''); sc.innerHTML = html;
+  document.body.appendChild(sc); overlayOpen++;
+  sc.close = () => { if (sc.isConnected) { sc.remove(); overlayOpen--; } };
+  return sc;
+}
+function confirmDlg(title, text, ok = 'OK', danger = false) {
+  return new Promise(res => {
+    const sc = openScrim(`<div class="dlg"><h2>${esc(title)}</h2><p>${esc(text)}</p><div class="btn-row"><button class="ghost" data-r="0">Cancel</button><button class="${danger ? 'ghost danger' : 'primary'}" style="height:50px" data-r="1">${esc(ok)}</button></div></div>`);
+    sc.addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b || e.target === sc) { sc.close(); res(b?.dataset.r === '1'); } });
+  });
+}
+function confetti(n = 70) {
+  const c = document.createElement('div'); c.className = 'confetti';
+  const cols = ['#ecbf7a', '#f7dcae', '#f2a0ba', '#9b7dff', '#86e3bd', '#fff'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + 'vw'; p.style.background = cols[i % cols.length];
+    p.style.animationDuration = 2.2 + Math.random() * 2.2 + 's'; p.style.animationDelay = Math.random() * .8 + 's';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`; c.appendChild(p);
+  }
+  document.body.appendChild(c); setTimeout(() => c.remove(), 5500);
+}
+
+/* ---------- navigation ---------- */
+function go(t) {
+  tab = t; document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'v-' + t));
+  document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#views').scrollTop = 0; render();
+}
+function render() { ({ home: renderHome, words: renderWords, progress: renderProgress, settings: renderSettings })[tab](); }
+
+/* ---------- HOME ---------- */
+function greeting() { const h = new Date().getHours(); return h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; }
+function scopeLabel() {
+  return S.scope === 'picked' ? `Picked · ${S.picked.filter(byId).length}` : S.scope === 'first' ? `First ${S.firstN}` : 'All words';
+}
+const dirLabel = () => ({ 'en-ru': 'English → Russian', 'ru-en': 'Russian → English', mix: 'Mixed directions' })[S.direction];
+async function renderHome() {
+  const L = levelInfo(), d = day(), inProg = words.filter(w => !w.learned && w.seen).length, st = streak();
+  const el = $('#v-home');
+  const empty = !words.length;
+  el.innerHTML = `
+    <div class="h-top"><div><div class="kicker">${greeting()}</div><h1>${esc(S.name || 'Your Highness')}</h1></div>
+      <div class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 7 12 2 12 2z"/></svg>${st} day${st === 1 ? '' : 's'}</div></div>
+    <button class="lvl-card" data-go="progress"><div class="lvl-img" id="h-art"></div>
+      <div class="lvl-info"><div class="kicker">Level ${L.lvl} of 20</div><div class="lvl-name">${esc(L.name)}</div>
+      <div class="bar"><i style="width:${(L.inLvl / L.per * 100).toFixed(1)}%"></i></div>
+      <div class="sub">${L.done ? 'All 20 levels complete. Absolute royalty.' : `${L.inLvl} / ${L.per} words · ${L.per - L.inLvl} to Level ${L.lvl + 1}`}</div></div></button>
+    <div class="tiles"><div class="tile"><b>${Math.floor(d.ms / 60000)}</b><span>min today</span></div>
+      <div class="tile"><b>${d.mastered}</b><span>learned today</span></div>
+      <div class="tile"><b>${inProg}</b><span>in progress</span></div></div>
+    ${empty ? `<div class="panel empty">${crownSVG(1).replace('<svg', '<svg style="width:70px;height:70px"')}<h2>Your pool is empty</h2><p>Import the word pool file you received to unlock your first cards.</p><button class="primary" data-action="import">Import word pool</button></div>` : `
+    <div class="panel">
+      <div class="len-row"><span class="kicker">Session length</span><span class="val" id="len-val">${S.minutes}<small>min</small></span></div>
+      <input type="range" id="len" min="5" max="45" step="5" value="${S.minutes}" style="--p:${(S.minutes - 5) / 40 * 100}%">
+      <div class="ticks"><span>5</span><span>15</span><span>25</span><span>35</span><span>45</span></div>
+      <div class="chips" data-go="settings"><span class="chip">${dirLabel()}</span><span class="chip">${scopeLabel()}</span><span class="chip">${S.target} reps to learn</span></div>
+    </div>
+    <button class="primary" data-action="start">Begin session</button>`}`;
+  $('#h-art').innerHTML = await levelArt(L.lvl);
+  const r = $('#len');
+  if (r) r.oninput = () => { S.minutes = +r.value; r.style.setProperty('--p', (S.minutes - 5) / 40 * 100 + '%'); $('#len-val').innerHTML = `${S.minutes}<small>min</small>`; saveSettings(); };
+}
+
+/* ---------- WORDS ---------- */
+function renderWords() {
+  const counts = { all: words.length, new: 0, progress: 0, learned: 0 };
+  words.forEach(w => counts[status(w)]++);
+  const q = norm(wordQuery);
+  const list = words.filter(w => (wordFilter === 'all' || status(w) === wordFilter) && (!q || norm(w.en).includes(q) || norm(w.ru).includes(q)));
+  const picked = new Set(S.picked);
+  const el = $('#v-words');
+  const pickedCount = S.picked.filter(byId).length;
+  el.innerHTML = `
+    <div class="v-head"><h1>Word pool</h1><button class="pill-btn ${pickMode ? 'on' : ''}" data-action="pickmode">${pickMode ? 'Done' : 'Select'}</button></div>
+    <input class="search" id="wq" type="search" placeholder="Search ${words.length} words" value="${esc(wordQuery)}" autocomplete="off">
+    <div class="seg">${['all', 'new', 'progress', 'learned'].map(f => `<button data-filter="${f}" class="${wordFilter === f ? 'on' : ''}">${{ all: 'All', new: 'New', progress: 'In progress', learned: 'Learned' }[f]}<small>${counts[f]}</small></button>`).join('')}</div>
+    ${pickMode ? `<div class="pickbar"><b>${pickedCount} picked</b><button data-action="pick-visible">Pick shown</button><button data-action="pick-clear">Clear</button>${S.scope !== 'picked' && pickedCount ? '<button data-action="study-picked">Study these</button>' : ''}</div>` : ''}
+    ${list.length ? `<ul class="wlist">${list.slice(0, wordLimit).map(w => {
+      const s = status(w);
+      return `<li class="wrow" data-id="${w.id}">${pickMode ? `<div class="check ${picked.has(w.id) ? 'on' : ''}"></div>` : ''}
+        <div class="thumb" data-img="img:${w.id}"></div>
+        <div class="wtxt"><div class="wen">${esc(w.en)}<span class="wipa">${esc(w.ipa)}</span></div><div class="wru">${esc(w.ru)}</div></div>
+        <span class="st st-${s}">${s === 'new' ? 'New' : s === 'learned' ? 'Learned' : `${w.count || 0}/${S.target}`}</span></li>`;
+    }).join('')}</ul>${list.length > wordLimit ? `<button class="more" data-action="more">Show more (${list.length - wordLimit})</button>` : ''}`
+      : `<div class="more">${words.length ? 'Nothing here yet.' : 'No words yet. Import a pool in Settings.'}</div>`}`;
+  const inp = $('#wq');
+  inp.oninput = () => { wordQuery = inp.value; wordLimit = 120; const pos = inp.selectionStart; renderWords(); const n = $('#wq'); n.focus(); n.setSelectionRange(pos, pos); };
+  lazyThumbs(el);
+}
+let thumbIO;
+function lazyThumbs(root) {
+  thumbIO?.disconnect();
+  thumbIO = new IntersectionObserver(es => es.forEach(async e => {
+    if (!e.isIntersecting) return; thumbIO.unobserve(e.target);
+    const u = await imgURL(e.target.dataset.img); if (u) e.target.style.backgroundImage = `url("${u}")`;
+  }), { root: $('#views'), rootMargin: '300px' });
+  root.querySelectorAll('[data-img]').forEach(t => thumbIO.observe(t));
+}
+
+/* word sheet (view / quick edit on the phone) */
+async function openWordSheet(id) {
+  const w = byId(id); if (!w) return;
+  const u = await imgURL('img:' + id); let newImg = null;
+  const s = status(w);
+  const sc = openScrim(`<div class="sheet"><div class="grab"></div>
+    <div class="s-img" id="ws-img" style="background-image:url('${u || ''}')"><button data-a="img">Replace image</button></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span class="st st-${s}">${s === 'new' ? 'New' : s === 'learned' ? 'Learned' : `In progress · ${w.count || 0}/${S.target}`}</span>
+      <span style="flex:1"></span><button class="speak sm" data-a="say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button></div>
+    <div class="field"><label>English</label><input id="ws-en" value="${esc(w.en)}" autocapitalize="off"></div>
+    <div class="field"><label>Transcription (IPA)</label><input id="ws-ipa" value="${esc(w.ipa)}" autocapitalize="off"></div>
+    <div class="field"><label>Translation</label><input id="ws-ru" value="${esc(w.ru)}"></div>
+    <div class="field"><label>Example sentence</label><textarea id="ws-ex" rows="3">${esc(w.example)}</textarea></div>
+    <button class="primary" data-a="save">Save changes</button>
+    <div class="btn-row"><button class="ghost" data-a="reset">Reset progress</button><button class="ghost danger" data-a="del">Delete word</button></div>
+    <button class="ghost" style="margin-top:10px" data-a="close">Close</button></div>`, false);
+  sc.addEventListener('click', async e => {
+    if (e.target === sc) return sc.close();
+    const a = e.target.closest('[data-a]')?.dataset.a; if (!a) return;
+    if (a === 'close') sc.close();
+    if (a === 'say') speak($('#ws-en', sc).value);
+    if (a === 'img') pickImage(async blob => { newImg = blob; $('#ws-img', sc).style.backgroundImage = `url('${URL.createObjectURL(blob)}')`; });
+    if (a === 'save') {
+      const en = $('#ws-en', sc).value.trim(), ru = $('#ws-ru', sc).value.trim();
+      if (!en || !ru) return toast('English word and translation are required.');
+      Object.assign(w, { en, ru, ipa: $('#ws-ipa', sc).value.trim(), example: $('#ws-ex', sc).value.trim(), updated: Date.now() });
+      await saveWord(w);
+      if (newImg) { await blobSet('img:' + w.id, newImg); dropURL('img:' + w.id); }
+      sc.close(); toast('Saved'); render();
+    }
+    if (a === 'reset' && await confirmDlg('Reset this word?', 'It goes back to New with 0 repetitions.', 'Reset')) {
+      Object.assign(w, { count: 0, seen: 0, learned: false, learnedAt: 0, stage: 0, nextReview: 0 });
+      await saveWord(w); sc.close(); toast('Progress reset'); render();
+    }
+    if (a === 'del' && await confirmDlg('Delete this word?', `"${w.en}" will be removed from this phone.`, 'Delete', true)) {
+      words = words.filter(x => x.id !== w.id); S.picked = S.picked.filter(x => x !== w.id);
+      await tx('words', 'readwrite', s => { s.delete(w.id); }); await blobDel('img:' + w.id); dropURL('img:' + w.id);
+      saveSettings(); sc.close(); toast('Deleted'); render();
+    }
+  });
+}
+let imgCb;
+function pickImage(cb) { imgCb = cb; const f = $('#f-image'); f.value = ''; f.click(); }
+$('#f-image').onchange = async e => { const f = e.target.files[0]; if (f && imgCb) imgCb(await resizeImage(f)); };
+async function resizeImage(file, max = 900) {
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = url; });
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(url);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', .85));
+}
+
+/* ---------- PROGRESS ---------- */
+async function renderProgress() {
+  const L = levelInfo(), d = day(), st = streak();
+  const counts = { new: 0, progress: 0, learned: 0 }; words.forEach(w => counts[status(w)]++);
+  const total = words.length || 1;
+  // last 14 days minutes
+  const days = []; const now = new Date();
+  for (let i = 13; i >= 0; i--) { const dd = new Date(now); dd.setDate(now.getDate() - i); days.push({ d: dd, v: Math.round((ST.days[ymd(dd)]?.ms || 0) / 60000), m: ST.days[ymd(dd)]?.mastered || 0 }); }
+  const max = Math.max(10, ...days.map(x => x.v));
+  const W = 340, H = 150, top = 18, bottom = 22, bw = 16, gap = (W - 14 * bw) / 13;
+  const bars = days.map((x, i) => {
+    const h = (x.v / max) * (H - top - bottom), X = i * (bw + gap), Y = H - bottom - h, today = i === 13;
+    return `<rect x="${X}" y="${Y}" width="${bw}" height="${Math.max(h, x.v ? 3 : 0)}" rx="4" fill="${today ? 'url(#bg)' : '#5b4a86'}"/>
+      ${x.v ? `<text x="${X + bw / 2}" y="${Y - 5}" text-anchor="middle" font-size="9.5" fill="${today ? '#f7dcae' : '#a798bf'}" font-weight="700">${x.v}</text>` : ''}
+      <text x="${X + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="${today ? '#ecbf7a' : '#6f6388'}" font-weight="${today ? 800 : 600}">${'SMTWTFS'[x.d.getDay()]}</text>`;
+  }).join('');
+  const week = days.slice(7).reduce((a, x) => a + x.v, 0);
+  const el = $('#v-progress');
+  el.innerHTML = `
+    <div class="v-head"><h1>Progress</h1></div>
+    <div class="panel hero"><div class="lvl-img" id="p-art"></div><div class="kicker">Level ${L.lvl} of 20</div><h2>${esc(L.name)}</h2>
+      <div class="bar" style="height:10px"><i style="width:${(L.inLvl / L.per * 100).toFixed(1)}%"></i></div>
+      <div class="sub">${L.done ? 'Every level conquered.' : `${L.inLvl} of ${L.per} words · next: ${esc(LV.names[L.lvl] || '')}`}</div></div>
+    <div class="tiles" style="grid-template-columns:repeat(2,1fr)">
+      <div class="tile"><b>${Math.floor(d.ms / 60000)}<small style="font-size:14px;color:var(--muted)"> min</small></b><span>studied today</span></div>
+      <div class="tile"><b>${d.mastered}</b><span>words learned today</span></div>
+      <div class="tile"><b>${L.total}</b><span>words learned in total</span></div>
+      <div class="tile"><b>${st}</b><span>day streak</span></div></div>
+    <div class="panel"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span class="kicker">Minutes · last 14 days</span><span class="sub" style="margin:0">${week} min this week</span></div>
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutes studied per day"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7dcae"/><stop offset="1" stop-color="#ecbf7a"/></linearGradient></defs>
+      <line x1="0" x2="${W}" y1="${H - bottom}" y2="${H - bottom}" stroke="rgba(255,255,255,.1)"/>${bars}</svg></div>
+    <div class="panel"><div class="kicker" style="margin-bottom:12px">Word pool · ${words.length}</div>
+      <div class="stack"><div style="flex:${counts.learned};background:var(--gold)"></div><div style="flex:${counts.progress};background:var(--rose)"></div><div style="flex:${counts.new};background:var(--violet)"></div></div>
+      <div class="legend"><span><i style="background:var(--gold)"></i>Learned ${counts.learned}</span><span><i style="background:var(--rose)"></i>In progress ${counts.progress}</span><span><i style="background:var(--violet)"></i>New ${counts.new}</span></div></div>
+    <div class="panel" style="padding:16px 8px 10px"><div class="kicker" style="margin:0 8px 12px">The road to the throne</div><div class="path" id="path"></div></div>`;
+  $('#p-art').innerHTML = await levelArt(L.lvl);
+  const nodes = [];
+  for (let i = 1; i <= 20; i++) {
+    const cls = (i < L.lvl || L.done) ? 'done' : i === L.lvl ? 'cur' : 'locked';
+    nodes.push(`<div class="node ${cls}"><div class="ring"><div class="in">${(await imgURL('media:level:' + i)) ? `<img src="${imgCache.get('media:level:' + i)}" alt="">` : i}</div></div><span>${esc(LV.names[i - 1])}</span></div>`);
+  }
+  const p = $('#path'); p.innerHTML = nodes.join('');
+  const cur = p.querySelector('.cur'); if (cur) p.scrollLeft = cur.offsetLeft - p.clientWidth / 2 + 38;
+}
+
+/* ---------- SETTINGS ---------- */
+function renderSettings() {
+  const gb = gbVoices();
+  const el = $('#v-settings');
+  el.innerHTML = `
+    <div class="v-head"><h1>Settings</h1></div>
+    <div class="set-group"><div class="kicker">You</div><div class="set">
+      <div class="set-row"><label for="s-name">Your name</label><input type="text" id="s-name" placeholder="Your Highness" value="${esc(S.name)}"></div></div></div>
+
+    <div class="set-group"><div class="kicker">Study</div><div class="set">
+      <div class="set-row col"><span class="lab">Direction</span>
+        <div class="seg" style="margin:10px 0 0">${[['en-ru', 'EN → RU'], ['ru-en', 'RU → EN'], ['mix', 'Mix']].map(([v, l]) => `<button data-set="direction" data-v="${v}" class="${S.direction === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+      <div class="set-row col"><span class="lab">Words to study<div class="hint">${S.scope === 'all' ? `Everything in the pool, ${ACTIVE_CAP} words in rotation at a time.` : S.scope === 'picked' ? `Only the words you picked in the Words tab (${S.picked.filter(byId).length} now).` : `The first ${S.firstN} words you haven't learned yet. When one is learned, the next one joins.`}</div></span>
+        <div class="seg" style="margin:10px 0 0">${[['all', 'All'], ['picked', 'Picked'], ['first', 'First N']].map(([v, l]) => `<button data-set="scope" data-v="${v}" class="${S.scope === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+        ${S.scope === 'first' ? `<div class="mini-chips">${[10, 15, 20, 30].map(n => `<button data-set="firstN" data-v="${n}" class="${S.firstN === n ? 'on' : ''}">${n}</button>`).join('')}<input type="number" id="s-firstN" min="1" max="999" inputmode="numeric" placeholder="Custom" value="${[10, 15, 20, 30].includes(S.firstN) ? '' : S.firstN}"></div>` : ''}
+        ${S.scope === 'picked' ? `<button class="ghost" style="margin-top:10px;height:44px" data-action="goto-pick">Pick words</button>` : ''}</div>
+      <div class="set-row"><span class="lab">Repetitions to learn<div class="hint">Correct answers needed. A miss costs 2.</div></span>
+        <div class="stepper"><button data-action="t-dn">−</button><b>${S.target}</b><button data-action="t-up">+</button></div></div></div></div>
+
+    <div class="set-group"><div class="kicker">Pronunciation</div><div class="set">
+      <div class="set-row"><span class="lab">Auto-play<div class="hint">Read words aloud as cards appear.</div></span><button class="toggle ${S.autoSpeak ? 'on' : ''}" data-action="autospeak"></button></div>
+      <div class="set-row"><span class="lab">Voice</span><select id="s-voice">${gb.length ? gb.map(v => `<option value="${esc(v.voiceURI)}" ${pickVoice()?.voiceURI === v.voiceURI ? 'selected' : ''}>${esc(v.name)}</option>`).join('') : '<option>British (default)</option>'}</select></div>
+      <div class="set-row col"><span class="lab">Speed</span><div class="seg" style="margin:10px 0 0">${[[0.75, 'Slow'], [0.9, 'Natural'], [1.05, 'Fast']].map(([v, l]) => `<button data-set="rate" data-v="${v}" class="${S.rate === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+      <div class="set-row"><span class="lab">Test the voice</span><button class="pill-btn" data-action="test-voice">Play</button></div></div></div>
+
+    <div class="set-group"><div class="kicker">Library</div><div class="set">
+      <div class="set-row col"><button class="primary" style="height:50px" data-action="import">Import word pool</button><div class="hint" style="margin-top:8px;text-align:center">New words are added. Your progress stays.</div></div>
+      <div class="set-row col"><button class="ghost" data-action="backup">Back up everything</button><div class="hint" style="margin-top:8px;text-align:center">Saves words, progress and settings to one file. Import it to restore.</div></div></div></div>
+
+    <div class="set-group"><div class="kicker">Danger zone</div><div class="set">
+      <div class="set-row col"><button class="ghost danger" data-action="reset-all">Reset all progress</button></div>
+      <div class="set-row col"><button class="ghost danger" data-action="erase">Erase everything</button></div></div></div>
+    <div class="foot">WordCrown ${APP_VERSION} · ${words.length} words</div>`;
+  $('#s-name').onchange = e => { S.name = e.target.value.trim(); saveSettings(); };
+  const fn = $('#s-firstN'); if (fn) fn.onchange = () => { const n = Math.max(1, Math.min(999, parseInt(fn.value) || 10)); S.firstN = n; saveSettings(); renderSettings(); };
+  $('#s-voice').onchange = e => { S.voiceURI = e.target.value; saveSettings(); speak('Hello. Shall we learn some words?'); };
+}
+
+/* ---------- import / backup ---------- */
+const dataURLtoBlob = u => fetch(u).then(r => r.blob());
+const blobToDataURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+
+$('#f-import').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importFile(f); };
+async function importFile(file) {
+  toast('Reading file…', 20000);
+  let data;
+  try { data = JSON.parse(await file.text()); } catch { return toast("That file isn't a WordCrown pool."); }
+  if (!data || data.format !== 'wordcrown' || !Array.isArray(data.words)) return toast("That file isn't a WordCrown pool.");
+  try {
+    if (data.kind === 'backup') {
+      if (!await confirmDlg('Restore this backup?', 'It replaces every word, all progress and settings on this phone.', 'Restore', true)) return toast('Cancelled');
+      await restoreBackup(data);
+    } else await mergePool(data);
+  } catch (err) { console.error(err); toast('Import failed: ' + (err.message || err)); }
+}
+async function applyMedia(m) {
+  const notes = [];
+  if (!m) return notes;
+  const puts = [];
+  for (const k of ['reward', 'know', 'recall']) if (m[k]) { puts.push(['media:' + k, await dataURLtoBlob(m[k])]); notes.push(k === 'reward' ? 'reward video' : 'button animation'); }
+  if (m.levels) for (const [n, u] of Object.entries(m.levels)) if (u) puts.push(['media:level:' + n, await dataURLtoBlob(u)]);
+  if (m.levels && Object.keys(m.levels).length) notes.push('level art');
+  await tx('blobs', 'readwrite', s => puts.forEach(([k, b]) => s.put(b, k)));
+  puts.forEach(([k]) => dropURL(k));
+  if (Array.isArray(m.levelNames) && m.levelNames.length === 20) LV.names = m.levelNames.map((n, i) => n || DEFAULT_LEVEL_NAMES[i]);
+  if (m.wordsPerLevel > 0) LV.per = +m.wordsPerLevel;
+  await kvSet('levels', LV);
+  return [...new Set(notes)];
+}
+async function mergePool(data) {
+  const mapId = new Map(words.map(w => [w.id, w])), mapEn = new Map(words.map(w => [norm(w.en), w]));
+  let order = words.reduce((m, w) => Math.max(m, w.order || 0), 0);
+  let added = 0, updated = 0, skipped = 0; const wPuts = [], bPuts = [];
+  for (const p of data.words) {
+    if (!p.en || !p.ru || !p.image) { skipped++; continue; }
+    const blob = await dataURLtoBlob(p.image);
+    let w = mapId.get(p.id) || mapEn.get(norm(p.en));
+    if (w) { Object.assign(w, { en: p.en.trim(), ipa: (p.ipa || '').trim(), ru: p.ru.trim(), example: (p.example || '').trim(), updated: p.updated || Date.now() }); updated++; }
+    else {
+      w = { id: p.id || uid(), en: p.en.trim(), ipa: (p.ipa || '').trim(), ru: p.ru.trim(), example: (p.example || '').trim(), order: ++order, count: 0, seen: 0, learned: false, learnedAt: 0, stage: 0, nextReview: 0, lastSeen: 0, updated: p.updated || Date.now() };
+      words.push(w); mapId.set(w.id, w); mapEn.set(norm(w.en), w); added++;
+    }
+    wPuts.push(w); bPuts.push(['img:' + w.id, blob]);
+  }
+  await tx(['words', 'blobs'], 'readwrite', ([ws, bs]) => { wPuts.forEach(w => ws.put(w)); bPuts.forEach(([k, b]) => bs.put(b, k)); });
+  bPuts.forEach(([k]) => dropURL(k));
+  const notes = await applyMedia(data.media);
+  words.sort((a, b) => a.order - b.order);
+  const parts = [`${added} new`, `${updated} updated`]; if (skipped) parts.push(`${skipped} skipped`);
+  toast(`Pool imported · ${parts.join(' · ')}${notes.length ? ' · new ' + notes.join(', ') : ''}`, 4500);
+  if (added) confetti(40);
+  render();
+}
+async function restoreBackup(data) {
+  await tx(['words', 'blobs', 'kv'], 'readwrite', ss => ss.forEach(s => s.clear()));
+  imgCache.forEach(u => u && URL.revokeObjectURL(u)); imgCache.clear();
+  const wPuts = [], bPuts = [];
+  for (const p of data.words) {
+    const { image, ...w } = p; wPuts.push(w);
+    if (image) bPuts.push(['img:' + w.id, await dataURLtoBlob(image)]);
+  }
+  await tx(['words', 'blobs'], 'readwrite', ([ws, bs]) => { wPuts.forEach(w => ws.put(w)); bPuts.forEach(([k, b]) => bs.put(b, k)); });
+  words = wPuts.sort((a, b) => a.order - b.order);
+  S = { ...DEFAULTS, ...(data.settings || {}) }; ST = data.stats || { days: {} };
+  LV = { names: DEFAULT_LEVEL_NAMES.slice(), per: 100 };
+  await saveSettings(); await saveStats(); await applyMedia(data.media);
+  toast(`Backup restored · ${words.length} words`, 3500); render();
+}
+async function backup() {
+  toast('Packing your backup…', 20000);
+  const out = { format: 'wordcrown', version: 1, kind: 'backup', exported: new Date().toISOString(), settings: S, stats: ST, words: [], media: { levels: {}, levelNames: LV.names, wordsPerLevel: LV.per } };
+  for (const w of words) { const b = await blobGet('img:' + w.id); out.words.push({ ...w, image: b ? await blobToDataURL(b) : '' }); }
+  for (const k of ['reward', 'know', 'recall']) { const b = await blobGet('media:' + k); if (b) out.media[k] = await blobToDataURL(b); }
+  for (let i = 1; i <= 20; i++) { const b = await blobGet('media:level:' + i); if (b) out.media.levels[i] = await blobToDataURL(b); }
+  const name = `WordCrown_backup_${ymd()}.json`;
+  const file = new File([JSON.stringify(out)], name, { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); toast('Backup ready'); return; }
+  } catch (e) { if (e.name === 'AbortError') return toast('Cancelled'); }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  toast('Backup saved');
+}
+
+/* ---------- SESSION ---------- */
+let sess = null, tickT = null;
+function scopeWords() {
+  if (S.scope === 'picked') { const set = new Set(S.picked); return words.filter(w => set.has(w.id)); }
+  const nl = words.filter(w => !w.learned);
+  if (S.scope === 'first') return nl.slice(0, S.firstN);
+  return [...nl.filter(w => w.seen), ...nl.filter(w => !w.seen)].slice(0, ACTIVE_CAP);
+}
+function refillDeck() {
+  const sc = scopeWords(), now = Date.now();
+  const active = sc.filter(w => !w.learned);
+  let due = words.filter(w => w.learned && w.nextReview <= now);
+  let n;
+  if (!active.length) {                       // everything in scope is learned: review round
+    const pool = S.scope === 'picked' ? sc : words.filter(w => w.learned);
+    if (!due.length) due = pool.slice();
+    n = Math.min(due.length, 20);
+  } else n = Math.min(due.length, Math.max(2, Math.ceil(active.length * 0.25)));
+  shuffle(due);
+  sess.deck = shuffle([...active.map(w => ({ id: w.id })), ...due.slice(0, n).map(w => ({ id: w.id }))]);
+}
+async function startSession() {
+  if (!words.length) return toast('Import a word pool first.');
+  sess = { total: S.minutes * 60000, remaining: S.minutes * 60000, last: performance.now(), cards: 0, mastered: 0, deck: [], prevId: null, cur: null, done: false };
+  refillDeck();
+  if (!sess.deck.length) { sess = null; return toast(S.scope === 'picked' ? 'Pick some words first.' : 'Nothing to study yet.'); }
+  $('#session').classList.remove('hidden');
+  $('#anim-know').innerHTML = (await mediaEl('know')) || '<div class="anim def-know"></div>';
+  $('#anim-recall').innerHTML = (await mediaEl('recall')) || '<div class="anim def-recall"></div>';
+  $('#s-cards').textContent = 0; updateTimer();
+  await showCard(true);
+  clearInterval(tickT); tickT = setInterval(tick, 250);
+}
+function tick() {
+  if (!sess || sess.done) return;
+  const now = performance.now(), dt = Math.min(now - sess.last, 2000); sess.last = now;
+  if (document.hidden || overlayOpen) return;
+  sess.remaining -= dt; day().ms += dt; statsDirty = true;
+  updateTimer();
+  if (sess.remaining <= 0) finishSession(true);
+}
+setInterval(() => { if (statsDirty) saveStats(); }, 5000);
+document.addEventListener('visibilitychange', () => { if (sess) sess.last = performance.now(); if (document.hidden && statsDirty) saveStats(); });
+function updateTimer() {
+  const r = Math.max(0, sess.remaining), s = Math.ceil(r / 1000);
+  $('#s-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  $('#ring').style.strokeDashoffset = (94.25 * (1 - r / sess.total)).toFixed(2);
+}
+const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+function highlight(ex, en) {
+  if (!ex) return '';
+  const parts = en.trim().split(/\s+/).map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const stem = parts.map((p, i) => i === parts.length - 1 && p.length > 3 ? p.replace(/e$|y$/i, '') : p).join('\\s+');
+  try {
+    const re = new RegExp(`\\b(${stem}[a-z]*)`, 'gi');
+    return ex.split(re).map((t, i) => i % 2 ? `<mark>${esc(t)}</mark>` : esc(t)).join('');
+  } catch { return esc(ex); }
+}
+async function nextItem() {
+  for (let guard = 0; guard < 3; guard++) {
+    if (!sess.deck.length) refillDeck();
+    while (sess.deck.length) {
+      let it = sess.deck.shift();
+      if (it.id === sess.prevId && sess.deck.length) { sess.deck.splice(1, 0, it); it = sess.deck.shift(); }
+      const w = byId(it.id); if (w) return w;
+    }
+  }
+  return null;
+}
+async function showCard(first = false) {
+  const w = await nextItem();
+  if (!w) { finishSession(false); return toast('No words left to study.'); }
+  const dir = S.direction === 'mix' ? (Math.random() < .5 ? 'en' : 'ru') : S.direction === 'en-ru' ? 'en' : 'ru';
+  sess.cur = { w, dir, review: w.learned, answered: false };
+  sess.prevId = w.id;
+  const card = $('#card');
+  const build = () => {
+    $('#front').innerHTML = `<div class="ftag"><span>${dir === 'en' ? 'English → Russian' : 'Russian → English'}</span>${w.learned ? '<span class="rv">Review</span>' : ''}</div>
+      ${dir === 'en' ? `<div class="big-word">${esc(w.en)}</div><div class="big-ipa">${esc(w.ipa)}</div><button class="speak" data-action="say-word">${SPK}</button><div class="ask">Do you know what it means?</div>`
+        : `<div class="big-word">${esc(w.ru)}</div><div class="ask">How do you say it in English?</div>`}`;
+    $('#back').innerHTML = '';
+    $('#ans-row').classList.remove('hidden'); $('#next-row').classList.add('hidden');
+  };
+  if (first) { card.classList.add('noanim'); card.classList.remove('flipped'); build(); void card.offsetWidth; card.classList.remove('noanim'); }
+  else {
+    card.classList.add('out'); await new Promise(r => setTimeout(r, 200));
+    card.classList.add('noanim'); card.classList.remove('flipped', 'out'); card.classList.add('pre'); build();
+    void card.offsetWidth; card.classList.remove('noanim', 'pre');
+  }
+  imgURL('img:' + w.id);                             // warm the image
+  if (S.autoSpeak && dir === 'en') speak(w.en);
+}
+function applyResult(w, knew) {
+  const out = { delta: 0, mastered: false, demoted: false, kept: false };
+  w.seen = (w.seen || 0) + 1; w.lastSeen = Date.now();
+  if (w.learned) {
+    if (knew) { w.stage = Math.min((w.stage || 0) + 1, REVIEW_DAYS.length - 1); w.nextReview = Date.now() + REVIEW_DAYS[w.stage] * DAY; out.kept = true; }
+    else { w.learned = false; w.count = Math.max(0, S.target - 2); out.demoted = true; }
+  } else if (knew) {
+    w.count = (w.count || 0) + 1; out.delta = 1;
+    if (w.count >= S.target) { w.learned = true; w.learnedAt = Date.now(); w.stage = 0; w.nextReview = Date.now() + REVIEW_DAYS[0] * DAY; out.mastered = true; }
+  } else { const c = w.count || 0; w.count = Math.max(0, c - 2); out.delta = w.count - c; }
+  return out;
+}
+async function answer(knew) {
+  const c = sess?.cur; if (!c || c.answered) return;
+  c.answered = true; c.knew = knew; c.snap = { ...c.w }; c.lvlBefore = levelInfo().lvl;
+  c.res = applyResult(c.w, knew);
+  if (c.res.mastered) { day().mastered++; sess.mastered++; }
+  day().cards++; sess.cards++; statsDirty = true; $('#s-cards').textContent = sess.cards; $('#s-cards-l').textContent = sess.cards === 1 ? 'card' : 'cards';
+  await saveWord(c.w);
+  if (!knew) requeue(c.w.id);
+  await renderBack();
+  $('#card').classList.add('flipped');
+  $('#ans-row').classList.add('hidden'); $('#next-row').classList.remove('hidden');
+  $('#oops').classList.toggle('hidden', !knew);
+  if (S.autoSpeak) speak(c.w.en);
+  if (c.res.mastered) { confetti(50); checkLevelUp(); }
+}
+function requeue(id) { sess.deck = sess.deck.filter(x => x.id !== id); sess.deck.splice(Math.min(sess.deck.length, 3 + Math.floor(Math.random() * 3)), 0, { id }); }
+async function oops() {
+  const c = sess?.cur; if (!c || !c.knew) return;
+  if (c.res.mastered) { day().mastered--; sess.mastered--; }
+  Object.assign(c.w, c.snap); c.knew = false; c.res = applyResult(c.w, false);
+  await saveWord(c.w); requeue(c.w.id); statsDirty = true;
+  await renderBack(); $('#oops').classList.add('hidden');
+}
+async function renderBack() {
+  const { w, res, knew } = sess.cur;
+  const u = await imgURL('img:' + w.id);
+  let chip;
+  if (res.mastered) chip = '<span class="res win">Learned ✦</span>';
+  else if (res.kept) chip = '<span class="res up">Still yours ✦</span>';
+  else if (res.demoted) chip = '<span class="res down">Back to practice</span>';
+  else chip = knew ? '<span class="res up">+1</span>' : `<span class="res down">${res.delta ? res.delta : 'Next time'}</span>`;
+  const pips = Array.from({ length: S.target }, (_, i) => `<i class="${w.learned || i < (w.count || 0) ? 'on' : ''}"></i>`).join('');
+  $('#back').innerHTML = `<div class="b-img">${u ? `<img src="${u}" alt="">` : ''}${chip}</div>
+    <div class="b-body">
+      <div class="b-head"><div><div class="b-en">${esc(w.en)}</div><div class="b-ipa">${esc(w.ipa)}</div></div><button class="speak sm" data-action="say-word">${SPK}</button></div>
+      <div class="b-ru">${esc(w.ru)}</div>
+      ${w.example ? `<div class="b-ex"><p>${highlight(w.example, w.en)}</p><button class="speak sm" data-action="say-ex">${SPK}</button></div>` : ''}
+      <div class="b-prog"><div class="pips">${pips}</div><span>${w.learned ? 'Learned' : `${w.count || 0} / ${S.target}`}</span></div>
+    </div>`;
+}
+async function checkLevelUp() {
+  const L = levelInfo();
+  if (L.lvl > (S.maxLevelSeen || 1)) {
+    S.maxLevelSeen = L.lvl; saveSettings();
+    const art = await levelArt(L.lvl);
+    const sc = openScrim(`<div class="rw"><div class="kicker">Level up</div><h2>${esc(L.name)}</h2><div class="meta">Level ${L.lvl} of 20 · ${L.total} words learned</div>
+      <div class="rw-media" style="display:grid;place-items:center">${art}</div><button class="primary" data-a="ok">Keep going</button></div>`);
+    confetti(120);
+    sc.addEventListener('click', e => { if (e.target.closest('[data-a]')) sc.close(); });
+  }
+}
+async function finishSession(completed) {
+  if (!sess || sess.done) return;
+  sess.done = true; clearInterval(tickT); await saveStats();
+  if (canSpeak) speechSynthesis.cancel();
+  const close = () => { $('#session').classList.add('hidden'); sess = null; render(); };
+  if (!completed) return close();
+  const mins = Math.round(sess.total / 60000);
+  const blob = await blobGet('media:reward');
+  const url = blob ? await imgURL('media:reward') : null;
+  const sc = openScrim(`<div class="rw"><div class="kicker">Session complete</div><h2>Time's up. You crushed it.</h2>
+    <div class="meta">${sess.cards} card${sess.cards === 1 ? '' : 's'} · ${sess.mastered} learned · ${mins} min</div>
+    ${url ? `<div class="rw-media"><video id="rw-v" src="${url}#t=0.1" playsinline preload="auto"></video><button class="rw-play" id="rw-play"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></span></button></div>
+      <button class="primary" id="rw-main">Play my reward</button>`
+      : `<div class="rw-media" style="display:grid;place-items:center">${crownSVG(levelInfo().lvl)}</div><button class="primary" id="rw-main">Done</button>`}
+    ${url ? '<button class="oops" id="rw-skip" style="margin-top:6px">Skip</button>' : ''}</div>`);
+  if (!url) confetti(110);
+  const v = $('#rw-v', sc);
+  if (v) { const fit = () => { if (v.videoWidth) v.parentElement.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight; }; v.addEventListener('loadedmetadata', fit); fit(); }
+  const play = () => { $('#rw-play', sc)?.remove(); v.muted = false; v.currentTime = 0; v.play().catch(() => { v.controls = true; }); $('#rw-main', sc).textContent = 'Done'; $('#rw-main', sc).onclick = done; confetti(80); };
+  const done = () => { v?.pause(); sc.close(); close(); };
+  if (v) { $('#rw-play', sc).onclick = play; $('#rw-main', sc).onclick = play; $('#rw-skip', sc).onclick = done; v.onended = () => { $('#rw-main', sc).textContent = 'Done'; }; }
+  else $('#rw-main', sc).onclick = done;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target;
+  const tb = t.closest('#tabbar button'); if (tb) return go(tb.dataset.tab);
+  const g = t.closest('[data-go]'); if (g) return go(g.dataset.go);
+  const f = t.closest('[data-filter]'); if (f) { wordFilter = f.dataset.filter; wordLimit = 120; return renderWords(); }
+  const st = t.closest('[data-set]');
+  if (st) { const k = st.dataset.set, v = st.dataset.v; S[k] = (k === 'firstN' || k === 'rate') ? +v : v; saveSettings(); if (k === 'rate') speak('Lovely to see you.'); return renderSettings(); }
+  const row = t.closest('.wrow');
+  if (row) {
+    if (pickMode) { const id = row.dataset.id; S.picked = S.picked.includes(id) ? S.picked.filter(x => x !== id) : [...S.picked, id]; saveSettings(); return renderWords(); }
+    return openWordSheet(row.dataset.id);
+  }
+  const a = t.closest('[data-action]')?.dataset.action; if (!a) return;
+  switch (a) {
+    case 'start': return startSession();
+    case 'know': return answer(true);
+    case 'recall': return answer(false);
+    case 'next': return showCard();
+    case 'oops': return oops();
+    case 'say-word': return speak(sess?.cur?.w.en);
+    case 'say-ex': return speak(sess?.cur?.w.example);
+    case 'end-session':
+      if (await confirmDlg('End this session?', 'Your minutes still count. The reward unlocks when the timer runs out.', 'End session')) finishSession(false);
+      return;
+    case 'import': { const fi = $('#f-import'); fi.value = ''; return fi.click(); }
+    case 'backup': return backup();
+    case 'pickmode': pickMode = !pickMode; return renderWords();
+    case 'pick-visible': { const q = norm(wordQuery); const vis = words.filter(w => (wordFilter === 'all' || status(w) === wordFilter) && (!q || norm(w.en).includes(q) || norm(w.ru).includes(q))).map(w => w.id); S.picked = [...new Set([...S.picked, ...vis])]; saveSettings(); return renderWords(); }
+    case 'pick-clear': S.picked = []; saveSettings(); return renderWords();
+    case 'study-picked': S.scope = 'picked'; saveSettings(); toast('Studying your picked words'); pickMode = false; return go('home');
+    case 'goto-pick': pickMode = true; return go('words');
+    case 'more': wordLimit += 200; return renderWords();
+    case 't-dn': S.target = Math.max(2, S.target - 1); saveSettings(); return renderSettings();
+    case 't-up': S.target = Math.min(10, S.target + 1); saveSettings(); return renderSettings();
+    case 'autospeak': S.autoSpeak = !S.autoSpeak; saveSettings(); return renderSettings();
+    case 'test-voice': return speak('The quick brown fox jumps over the lazy dog.');
+    case 'reset-all':
+      if (await confirmDlg('Reset all progress?', 'Every word goes back to New. Minutes and streaks are cleared. Words stay.', 'Reset', true)) {
+        words.forEach(w => Object.assign(w, { count: 0, seen: 0, learned: false, learnedAt: 0, stage: 0, nextReview: 0 }));
+        await tx('words', 'readwrite', s => words.forEach(w => s.put(w)));
+        ST = { days: {} }; S.maxLevelSeen = 1; await saveStats(); await saveSettings(); toast('Fresh start'); render();
+      } return;
+    case 'erase':
+      if (await confirmDlg('Erase everything?', 'All words, images, videos, progress and settings will be deleted from this phone.', 'Erase', true)) {
+        await tx(['words', 'blobs', 'kv'], 'readwrite', ss => ss.forEach(s => s.clear()));
+        words = []; S = { ...DEFAULTS }; ST = { days: {} }; LV = { names: DEFAULT_LEVEL_NAMES.slice(), per: 100 };
+        imgCache.forEach(u => u && URL.revokeObjectURL(u)); imgCache.clear(); toast('Erased'); go('home');
+      } return;
+  }
+});
+
+/* ---------- boot ---------- */
+(async function boot() {
+  db = await openDB();
+  words = (await tx('words', 'readonly', s => s.getAll())) || [];
+  words.sort((a, b) => a.order - b.order);
+  S = { ...DEFAULTS, ...((await kvGet('settings')) || {}) };
+  ST = (await kvGet('stats')) || { days: {} };
+  LV = { names: DEFAULT_LEVEL_NAMES.slice(), per: 100, ...((await kvGet('levels')) || {}) };
+  render();
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  syncFromSite();
+})();
+
+/* ---------- auto-load pool.json published next to the app (GitHub Pages) ---------- */
+// Cheap HEAD check first; the big file is only downloaded when it changed. Merging keeps all progress.
+async function syncFromSite() {
+  if (!/^https?:$/.test(location.protocol)) return;
+  try {
+    const h = await fetch('pool.json', { method: 'HEAD', cache: 'no-cache' });
+    if (!h.ok) return;
+    const tag = h.headers.get('etag') || h.headers.get('last-modified') || h.headers.get('content-length') || '';
+    if (tag && tag === await kvGet('sitePoolTag')) return;
+    toast('Loading new words…', 30000);
+    const data = await (await fetch('pool.json', { cache: 'no-cache' })).json();
+    if (!data || data.format !== 'wordcrown' || !Array.isArray(data.words)) return $('#toast').classList.remove('on');
+    if (data.exported && data.exported === await kvGet('sitePoolExported')) { await kvSet('sitePoolTag', tag); return $('#toast').classList.remove('on'); }
+    await mergePool(data);
+    await kvSet('sitePoolTag', tag); await kvSet('sitePoolExported', data.exported || '');
+  } catch (err) { console.warn('pool.json sync skipped', err); }
+}
+</script>
+</body>
+</html>

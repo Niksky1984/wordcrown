@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WordCrown Studio</title>
+<link rel="icon" href="icons/icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0f0b1a;--surface:#1b1530;--surface2:#251d3d;--line:rgba(255,255,255,.09);--text:#f5effc;--muted:#a798bf;--faint:#6f6388;--gold:#ecbf7a;--gold2:#f7dcae;--rose:#f2a0ba;--bad:#ff9a9a;--ok:#86e3bd;
+--serif:ui-serif,"New York",Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html{background:#0f0b1a}
+body{margin:0;background:radial-gradient(100% 50% at 50% -10%,#2a1846,var(--bg) 60%) fixed;color:var(--text);font-family:var(--sans);font-size:14px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(15,11,26,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;margin-right:auto}
+.brand img{width:34px;height:34px;border-radius:9px}
+.brand small{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:2px}
+.btn{height:38px;padding:0 14px;border-radius:11px;background:var(--surface2);border:1px solid var(--line);font-weight:600;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn:hover{border-color:rgba(255,255,255,.2)}
+.btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#24170a;border:0}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+main{max-width:1200px;margin:0 auto;padding:20px 24px 60px}
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tabs button{padding:10px 16px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--text);border-color:var(--gold)}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.toolbar input{height:38px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 12px;width:260px;outline:none}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:3px}
+.seg button{padding:6px 12px;border-radius:8px;color:var(--muted);font-weight:600;font-size:13px}
+.seg button.on{background:var(--surface2);color:var(--text)}
+.stats{margin-left:auto;color:var(--muted)}
+.stats b{color:var(--text)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);background:#1f1836}
+td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:rgba(255,255,255,.02)}
+td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
+.th{width:56px;height:56px;border-radius:12px;background:var(--surface2) center/cover no-repeat;display:grid;place-items:center;color:var(--bad);font-size:10px;font-weight:700;text-align:center;line-height:1.1}
+.th.missing{border:1.5px dashed var(--bad)}
+.en{font-family:var(--serif);font-size:17px}
+.ipa{color:var(--muted)}
+.ex{color:#cfc4e2;font-style:italic;max-width:360px}
+.warn{color:#ffcf8a;font-size:12px}
+.bad{color:var(--bad);font-size:12px;font-weight:600}
+.row-act{white-space:nowrap;text-align:right}
+.row-act button{padding:6px 8px;border-radius:8px;color:var(--muted)}
+.row-act button:hover{background:var(--surface2);color:var(--text)}
+.drop{border:2px dashed rgba(236,191,122,.35);border-radius:16px;padding:18px;text-align:center;color:var(--muted);margin-bottom:14px}
+.drop.over{background:rgba(236,191,122,.08);border-color:var(--gold)}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(5,3,10,.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:20;padding:20px}
+.modal{width:100%;max-width:860px;max-height:92vh;overflow:auto;background:#151024;border:1px solid var(--line);border-radius:22px;padding:22px}
+.modal h2{font-family:var(--serif);font-size:24px;margin:0 0 16px;font-weight:600}
+.grid2{display:grid;grid-template-columns:300px 1fr;gap:20px}
+.imgbox{aspect-ratio:4/3;border-radius:16px;border:2px dashed rgba(255,255,255,.18);background:var(--surface) center/cover no-repeat;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:14px;cursor:pointer;position:relative}
+.imgbox.has{border-style:solid;border-color:var(--line);color:transparent}
+.imgbox.req{border-color:var(--bad)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:5px}
+.field input,.field textarea{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:11px;padding:10px 12px;font-size:15px;font-family:inherit;outline:none;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:rgba(236,191,122,.5)}
+.field input.big{font-family:var(--serif);font-size:20px}
+.m-foot{display:flex;gap:10px;align-items:center;margin-top:16px}
+.m-foot .msg{margin-right:auto;font-size:13px}
+/* media */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.mcard h3{margin:0 0 4px;font-size:15px}
+.mcard p{margin:0 0 12px;color:var(--muted);font-size:12.5px;line-height:1.4}
+.prev{border-radius:14px;background:#120d1f;overflow:hidden;display:grid;place-items:center;color:var(--faint);margin-bottom:10px;position:relative}
+.prev video,.prev img{width:100%;height:100%;object-fit:cover;display:block}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.lv{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+.lv .prev{aspect-ratio:1;margin-bottom:8px;cursor:pointer}
+.lv .prev b{font-size:26px;color:var(--faint)}
+.lv input{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:6px 8px;font-size:12.5px;outline:none}
+.lv .lvh{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;letter-spacing:.06em}
+.lv .lvh button{color:var(--bad);font-size:11px}
+.h2{font-family:var(--serif);font-size:22px;margin:6px 0 12px;font-weight:600}
+.note{color:var(--muted);line-height:1.5;margin:0 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.opt input{margin-top:3px;accent-color:var(--gold)}
+.opt small{display:block;color:var(--muted);margin-top:2px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:#2d2347;border:1px solid rgba(255,255,255,.14);padding:12px 18px;border-radius:14px;font-weight:600;transition:.3s;z-index:50;pointer-events:none;max-width:80vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty h3{font-family:var(--serif);font-size:24px;color:var(--text);margin:0 0 8px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img src="icons/icon-192.png" alt="">WordCrown <small>Studio</small></div>
+  <button class="btn" data-a="open-pool" title="Load a pool or backup file into the editor">Open pool file</button>
+  <button class="btn gold" data-a="export">Export pool</button>
+</header>
+<main>
+  <div class="tabs"><button class="on" data-tab="words">Words</button><button data-tab="media">Media &amp; levels</button></div>
+
+  <section id="t-words">
+    <div class="toolbar">
+      <button class="btn gold" data-a="add">+ Add word</button>
+      <button class="btn" data-a="excel">Import Excel</button>
+      <button class="btn" data-a="images">Add images</button>
+      <button class="btn" data-a="template">Excel template</button>
+      <input id="q" type="search" placeholder="Search…">
+      <div class="seg" id="flt"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="drop" id="drop">Drop images here. Files named like the word (<b>apple.jpg</b>, <b>ice_cream.png</b>) or like the Excel “Image” column are matched automatically.</div>
+    <div id="tbl"></div>
+  </section>
+
+  <section id="t-media" class="hidden">
+    <div class="cards">
+      <div class="mcard"><h3>Reward video</h3><p>Plays when the session timer runs out. Any shape (square or 16:9), about 10–20 seconds, MP4, with sound. Under 15 MB keeps the pool file light.</p>
+        <div class="prev" style="aspect-ratio:1" id="pv-reward">None yet</div>
+        <button class="btn" data-pick="reward">Choose MP4</button> <button class="btn danger" data-clear="reward">Remove</button><div id="info-reward" class="warn" style="margin-top:8px"></div></div>
+      <div class="mcard"><h3>“I know it” button</h3><p>16:9 animation shown on the button. GIF, animated WebP or a short MP4 (silent loop).</p>
+        <div class="prev" style="aspect-ratio:16/9" id="pv-know">Default shimmer</div>
+        <button class="btn" data-pick="know">Choose file</button> <button class="btn danger" data-clear="know">Remove</button><div id="info-know" class="warn" style="margin-top:8px"></div></div>
+      <div class="mcard"><h3>“I can't recall” button</h3><p>16:9 animation shown on the button. GIF, animated WebP or a short MP4 (silent loop).</p>
+        <div class="prev" style="aspect-ratio:16/9" id="pv-recall">Default shimmer</div>
+        <button class="btn" data-pick="recall">Choose file</button> <button class="btn danger" data-clear="recall">Remove</button><div id="info-recall" class="warn" style="margin-top:8px"></div></div>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:14px"><div class="h2">Levels</div>
+      <label class="note" style="margin:0">Words per level <input id="per" type="number" min="10" max="1000" style="width:80px;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:6px 8px;margin-left:6px"></label></div>
+    <p class="note">20 levels. Level 1 is where she starts; each level completes after the set number of learned words (100 → Level 2 at 100 words, Level 3 at 200…). Click a tile to set its picture (square works best). Until a picture is set, the app shows a golden crown that grows with each level.</p>
+    <div class="levels" id="levels"></div>
+  </section>
+</main>
+<div id="toast"></div>
+<input type="file" id="f-any" hidden>
+
+<script>
+'use strict';
+const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Grand Empress','Empress of Tongues','Empress of Words'];
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const stemKey = s => norm(String(s || '').replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[_\-]+/g, ' '));
+const ymd = (d = new Date()) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+const fmtMB = n => (n / 1048576).toFixed(1) + ' MB';
+let toastT; function toast(m, ms = 3200) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+
+/* ---------- storage ---------- */
+let db;
+const openDB = () => new Promise((res, rej) => { const r = indexedDB.open('wordcrown-studio', 1); r.onupgradeneeded = () => { r.result.createObjectStore('words', { keyPath: 'id' }); r.result.createObjectStore('kv'); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+function tx(store, mode, fn) { return new Promise((res, rej) => { const t = db.transaction(store, mode); const o = fn(t.objectStore(store)); t.oncomplete = () => res(o instanceof IDBRequest ? o.result : o); t.onerror = () => rej(t.error); }); }
+const kvGet = k => tx('kv', 'readonly', s => s.get(k));
+const kvSet = (k, v) => tx('kv', 'readwrite', s => { s.put(v, k); });
+const putWords = ws => tx('words', 'readwrite', s => { ws.forEach(w => s.put(w)); });
+
+let words = [];   // {id,en,ipa,ru,example,image(dataURL),imageName,order,updated}
+let media = { reward: null, know: null, recall: null, levels: {}, levelNames: DEFAULT_LEVEL_NAMES.slice(), wordsPerLevel: 100, updated: 0 };
+let lastExport = 0, filter = 'all', query = '';
+const complete = w => !!(w.en && w.ru && w.image);
+const saveMedia = () => { media.updated = Date.now(); return kvSet('media', media); };
+
+/* ---------- image processing ---------- */
+function loadImg(src) { return new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = src; }); }
+async function processImage(file, max = 800) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImg(url);
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    let out = c.toDataURL('image/webp', .82);
+    if (!out.startsWith('data:image/webp')) { const x = c.getContext('2d'); x.globalCompositeOperation = 'destination-over'; x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); out = c.toDataURL('image/jpeg', .85); }
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+const fileToDataURL = f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+function pickFile(accept, multiple = false) {
+  return new Promise(res => { const f = $('#f-any'); f.accept = accept; f.multiple = multiple; f.value = ''; f.onchange = () => res([...f.files]); f.click(); });
+}
+
+/* ---------- words table ---------- */
+function renderWords() {
+  const nAll = words.length, nNoImg = words.filter(w => !w.image).length, nWarn = words.filter(w => w.image && (!w.ipa || !w.example)).length;
+  const nChanged = words.filter(w => complete(w) && w.updated > lastExport).length;
+  $('#flt').innerHTML = [['all', `All ${nAll}`], ['noimg', `No image ${nNoImg}`], ['warn', `Missing IPA/example ${nWarn}`], ['changed', `Changed since export ${nChanged}`]]
+    .map(([k, l]) => `<button data-f="${k}" class="${filter === k ? 'on' : ''}">${l}</button>`).join('');
+  $('#stats').innerHTML = `<b>${words.filter(complete).length}</b> ready to export`;
+  const q = norm(query);
+  const list = words.filter(w => (filter === 'all' || (filter === 'noimg' && !w.image) || (filter === 'warn' && w.image && (!w.ipa || !w.example)) || (filter === 'changed' && complete(w) && w.updated > lastExport))
+    && (!q || norm(w.en).includes(q) || norm(w.ru).includes(q)));
+  if (!words.length) { $('#tbl').innerHTML = `<div class="empty"><h3>No words yet</h3>Add words one by one, or import your Excel list and drop the images in.</div>`; return; }
+  $('#tbl').innerHTML = `<table><thead><tr><th>#</th><th>Image</th><th>English</th><th>IPA</th><th>Russian</th><th>Example</th><th></th></tr></thead><tbody>
+    ${list.map(w => `<tr data-id="${w.id}">
+      <td class="num">${words.indexOf(w) + 1}</td>
+      <td><div class="th ${w.image ? '' : 'missing'}" style="${w.image ? `background-image:url('${w.image}')` : ''}">${w.image ? '' : 'NO<br>IMAGE'}</div></td>
+      <td><div class="en">${esc(w.en)}</div>${w.imageName && !w.image ? `<div class="bad">needs ${esc(w.imageName)}</div>` : ''}</td>
+      <td class="ipa">${esc(w.ipa) || '<span class="warn">missing</span>'}</td>
+      <td>${esc(w.ru)}</td>
+      <td class="ex">${esc(w.example) || '<span class="warn">missing</span>'}</td>
+      <td class="row-act"><button data-r="say" title="Listen">🔊</button><button data-r="up" title="Move up">↑</button><button data-r="down" title="Move down">↓</button><button data-r="edit">Edit</button><button data-r="del" title="Delete">✕</button></td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+/* ---------- word modal ---------- */
+function openWord(id) {
+  const w = id ? words.find(x => x.id === id) : null;
+  let image = w?.image || null;
+  const sc = document.createElement('div'); sc.className = 'scrim';
+  sc.innerHTML = `<div class="modal"><h2>${w ? 'Edit word' : 'New word'}</h2><div class="grid2">
+    <div><div class="imgbox ${image ? 'has' : 'req'}" id="ib" style="${image ? `background-image:url('${image}')` : ''}"><div>Click, drop or paste an image<br><small>(required)</small></div></div>
+      <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="ib-pick">Choose image</button><button class="btn" id="say">🔊 Listen</button></div></div>
+    <div><div class="field"><label>English word</label><input class="big" id="m-en" value="${esc(w?.en)}"></div>
+      <div class="field"><label>Transcription (IPA)</label><input id="m-ipa" value="${esc(w?.ipa)}" placeholder="/ˈæp.əl/"></div>
+      <div class="field"><label>Russian translation</label><input class="big" id="m-ru" value="${esc(w?.ru)}"></div>
+      <div class="field"><label>Example sentence</label><textarea id="m-ex" rows="3">${esc(w?.example)}</textarea></div></div></div>
+    <div class="m-foot"><span class="msg" id="m-msg"></span><button class="btn" id="m-cancel">Cancel</button>${w ? '' : '<button class="btn" id="m-save-next">Save &amp; add another</button>'}<button class="btn gold" id="m-save">Save</button></div></div>`;
+  document.body.appendChild(sc);
+  const ib = $('#ib', sc);
+  const setImg = async f => { if (!f || !f.type.startsWith('image/')) return; image = await processImage(f); ib.style.backgroundImage = `url('${image}')`; ib.classList.add('has'); ib.classList.remove('req'); validate(); };
+  const validate = () => {
+    const en = $('#m-en', sc).value.trim(), ru = $('#m-ru', sc).value.trim();
+    const dup = words.find(x => x !== w && norm(x.en) === norm(en));
+    let err = !en ? 'English word is required.' : !ru ? 'Translation is required.' : !image ? 'An image is required. No image, no save.' : dup ? `"${en}" is already in the pool.` : '';
+    const warn = !err && (!$('#m-ipa', sc).value.trim() || !$('#m-ex', sc).value.trim()) ? 'Tip: IPA and an example sentence make the card complete.' : '';
+    $('#m-msg', sc).innerHTML = err ? `<span class="bad">${err}</span>` : `<span class="warn">${warn}</span>`;
+    sc.querySelectorAll('#m-save,#m-save-next').forEach(b => b.disabled = !!err);
+    return !err;
+  };
+  ib.onclick = () => pickFile('image/*').then(f => setImg(f[0]));
+  $('#ib-pick', sc).onclick = ib.onclick;
+  ib.ondragover = e => { e.preventDefault(); }; ib.ondrop = e => { e.preventDefault(); setImg(e.dataTransfer.files[0]); };
+  sc.onpaste = e => { const it = [...e.clipboardData.items].find(i => i.type.startsWith('image/')); if (it) { e.preventDefault(); setImg(it.getAsFile()); } };
+  sc.addEventListener('input', validate);
+  $('#say', sc).onclick = () => speak($('#m-en', sc).value + '. ' + $('#m-ex', sc).value);
+  $('#m-cancel', sc).onclick = () => sc.remove();
+  const save = async again => {
+    if (!validate()) return;
+    const data = { en: $('#m-en', sc).value.trim(), ipa: $('#m-ipa', sc).value.trim(), ru: $('#m-ru', sc).value.trim(), example: $('#m-ex', sc).value.trim(), image, updated: Date.now() };
+    let rec;
+    if (w) { Object.assign(w, data); rec = w; } else { rec = { id: uid(), order: nextOrder(), imageName: '', ...data }; words.push(rec); }
+    await putWords([rec]); sc.remove(); renderWords(); toast('Saved');
+    if (again) openWord();
+  };
+  $('#m-save', sc).onclick = () => save(false);
+  const sn = $('#m-save-next', sc); if (sn) sn.onclick = () => save(true);
+  validate(); setTimeout(() => $('#m-en', sc).focus(), 50);
+}
+const nextOrder = () => words.reduce((m, w) => Math.max(m, w.order || 0), 0) + 1;
+
+/* ---------- speech ---------- */
+function speak(t) { if (!('speechSynthesis' in window) || !t.trim()) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); const v = speechSynthesis.getVoices().find(v => /^en[-_]GB/i.test(v.lang)); if (v) u.voice = v; u.lang = 'en-GB'; u.rate = .9; speechSynthesis.speak(u); }
+
+/* ---------- Excel import ---------- */
+async function importExcel() {
+  if (!window.XLSX) return toast('Excel reader needs an internet connection the first time. Check the connection and reload.');
+  const [f] = await pickFile('.xlsx,.xls,.csv,.ods'); if (!f) return;
+  const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' }).filter(r => r.some(c => String(c).trim()));
+  if (!rows.length) return toast('The sheet is empty.');
+  const head = rows[0].map(h => norm(h));
+  const find = re => head.findIndex(h => re.test(h));
+  let col = { en: find(/^(en|eng|english|word)/), ipa: find(/ipa|transcr|pronun/), ru: find(/^(ru|rus|russian|translation)/), ex: find(/example|sentence/), img: find(/image|picture|photo|file/) };
+  let start = 1;
+  if (col.en < 0 || col.ru < 0) { col = { en: 0, ipa: 1, ru: 2, ex: 3, img: 4 }; start = 0; }
+  const mapEn = new Map(words.map(w => [norm(w.en), w]));
+  let added = 0, updated = 0; const changed = [];
+  let order = nextOrder() - 1;
+  for (const r of rows.slice(start)) {
+    const g = i => i >= 0 ? String(r[i] ?? '').trim() : '';
+    const en = g(col.en), ru = g(col.ru); if (!en || !ru) continue;
+    const rec = { en, ipa: g(col.ipa), ru, example: g(col.ex), imageName: g(col.img) };
+    const w = mapEn.get(norm(en));
+    if (w) { Object.assign(w, rec, { imageName: rec.imageName || w.imageName, ipa: rec.ipa || w.ipa, example: rec.example || w.example, updated: Date.now() }); changed.push(w); updated++; }
+    else { const nw = { id: uid(), order: ++order, image: null, updated: Date.now(), ...rec }; words.push(nw); mapEn.set(norm(en), nw); changed.push(nw); added++; }
+  }
+  await putWords(changed);
+  const missing = words.filter(w => !w.image).length;
+  filter = missing ? 'noimg' : 'all'; renderWords();
+  toast(`${added} added · ${updated} updated${missing ? ` · ${missing} still need an image — drop them in` : ''}`, 5000);
+}
+
+/* ---------- bulk image matching ---------- */
+async function addImages(files) {
+  files = files.filter(f => f.type.startsWith('image/')); if (!files.length) return;
+  const byKey = new Map();
+  words.forEach(w => { if (w.imageName) byKey.set(stemKey(w.imageName), w); byKey.set(stemKey(w.en), byKey.get(stemKey(w.en)) || w); });
+  let ok = 0; const miss = [], changed = [];
+  toast(`Processing ${files.length} image(s)…`, 60000);
+  for (const f of files) {
+    const w = byKey.get(stemKey(f.name));
+    if (!w) { miss.push(f.name); continue; }
+    w.image = await processImage(f); w.updated = Date.now(); changed.push(w); ok++;
+  }
+  await putWords(changed); renderWords();
+  toast(`${ok} image(s) matched${miss.length ? ` · not matched: ${miss.slice(0, 5).join(', ')}${miss.length > 5 ? '…' : ''}` : ''}`, 6000);
+}
+
+/* ---------- template ---------- */
+function downloadTemplate() {
+  if (!window.XLSX) return toast('Needs an internet connection the first time.');
+  const ws = XLSX.utils.aoa_to_sheet([['English', 'IPA', 'Russian', 'Example', 'Image'], ['apple', '/ˈæp.əl/', 'яблоко', 'She eats an apple every morning.', 'apple.jpg'], ['brave', '/breɪv/', 'смелый', 'It was a brave decision.', 'brave.jpg']]);
+  ws['!cols'] = [{ wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 48 }, { wch: 18 }];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Words'); XLSX.writeFile(wb, 'WordCrown_words_template.xlsx');
+}
+
+/* ---------- media ---------- */
+function mediaHTML(u, fit = 'cover') { if (!u) return null; return u.startsWith('data:video') ? `<video src="${u}" controls playsinline style="object-fit:${fit}"></video>` : `<img src="${u}" alt="">`; }
+function renderMedia() {
+  $('#pv-reward').innerHTML = mediaHTML(media.reward) || 'None yet';
+  $('#pv-know').innerHTML = mediaHTML(media.know) || 'Default shimmer';
+  $('#pv-recall').innerHTML = mediaHTML(media.recall) || 'Default shimmer';
+  ['reward', 'know', 'recall'].forEach(k => { const v = $('#pv-' + k + ' video'); if (v && k !== 'reward') { v.controls = false; v.muted = true; v.loop = true; v.autoplay = true; v.play().catch(() => {}); } });
+  $('#per').value = media.wordsPerLevel;
+  $('#levels').innerHTML = Array.from({ length: 20 }, (_, i) => {
+    const n = i + 1, u = media.levels[n];
+    return `<div class="lv"><div class="lvh"><span>LEVEL ${n} · ${(n - 1) * media.wordsPerLevel}+</span>${u ? `<button data-lvclear="${n}">remove</button>` : ''}</div>
+      <div class="prev" data-lv="${n}">${u ? `<img src="${u}" alt="">` : `<b>${n}</b>`}</div>
+      <input data-lvname="${n}" value="${esc(media.levelNames[i])}"></div>`;
+  }).join('');
+}
+async function pickMedia(k) {
+  const accept = k === 'reward' ? 'video/mp4,video/quicktime,video/*' : 'image/gif,image/webp,image/png,video/mp4,video/*';
+  const [f] = await pickFile(accept); if (!f) return;
+  const url = await fileToDataURL(f);
+  let info = `${f.name} · ${fmtMB(f.size)}`;
+  if (f.type.startsWith('video')) {
+    const meta = await new Promise(r => { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = () => r({ w: v.videoWidth, h: v.videoHeight, d: v.duration }); v.onerror = () => r(null); v.src = url; });
+    if (meta) {
+      info += ` · ${meta.w}×${meta.h} · ${meta.d.toFixed(1)} s`;
+      const ratio = meta.w / meta.h, want = k === 'reward' ? 1 : 16 / 9;
+      if (k !== 'reward' && Math.abs(ratio - want) > .05) info += ` · ⚠ not ${k === 'reward' ? '1:1' : '16:9'}, it will be cropped`;
+      if (k === 'reward' && meta.d > 25) info += ' · ⚠ longer than 20 s';
+    }
+  } else if (k !== 'reward') {
+    const img = await loadImg(url); const ratio = img.naturalWidth / img.naturalHeight;
+    info += ` · ${img.naturalWidth}×${img.naturalHeight}`; if (Math.abs(ratio - 16 / 9) > .05) info += ' · ⚠ not 16:9, it will be cropped';
+  }
+  if (f.size > 15 * 1048576) info += ' · ⚠ large file, the pool will be heavy';
+  media[k] = url; await saveMedia(); renderMedia(); $('#info-' + k).textContent = info; toast('Saved');
+}
+
+/* ---------- export ---------- */
+function exportDialog() {
+  const ready = words.filter(complete), changed = ready.filter(w => w.updated > lastExport), skipped = words.length - ready.length;
+  const mediaSize = ['reward', 'know', 'recall'].reduce((a, k) => a + (media[k]?.length || 0), 0) + Object.values(media.levels).reduce((a, u) => a + (u?.length || 0), 0);
+  const mediaChanged = media.updated > lastExport;
+  const sc = document.createElement('div'); sc.className = 'scrim';
+  sc.innerHTML = `<div class="modal" style="max-width:560px"><h2>Export pool</h2>
+    ${skipped ? `<p class="bad" style="margin:0 0 12px">${skipped} word(s) have no image and will not be exported.</p>` : ''}
+    <label class="opt"><input type="radio" name="which" value="all" checked><div><b>All words</b> (${ready.length})<small>Best for the first send, or as your own backup.</small></div></label>
+    <label class="opt"><input type="radio" name="which" value="changed" ${changed.length ? '' : 'disabled'}><div><b>Only new &amp; changed since last export</b> (${changed.length})<small>${lastExport ? 'Last export: ' + new Date(lastExport).toLocaleString() : 'No export yet.'} Smaller file; her progress is kept either way.</small></div></label>
+    <label class="opt"><input type="checkbox" id="x-media" ${mediaChanged || !lastExport ? 'checked' : ''}><div><b>Include video, button animations, level pictures &amp; names</b><small>${fmtMB(mediaSize * .75)}${mediaChanged ? ' · changed since last export' : ' · unchanged since last export'}</small></div></label>
+    <div class="m-foot"><span class="msg"></span><button class="btn" id="x-cancel">Cancel</button><button class="btn gold" id="x-go">Download</button></div></div>`;
+  document.body.appendChild(sc);
+  $('#x-cancel', sc).onclick = () => sc.remove();
+  $('#x-go', sc).onclick = async () => {
+    const which = $('input[name=which]:checked', sc).value, incMedia = $('#x-media', sc).checked;
+    const list = which === 'all' ? ready : changed;
+    if (!list.length && !incMedia) return toast('Nothing to export.');
+    const out = { format: 'wordcrown', version: 1, kind: 'pool', exported: new Date().toISOString(),
+      words: list.map(w => ({ id: w.id, en: w.en, ipa: w.ipa, ru: w.ru, example: w.example, image: w.image, updated: w.updated })) };
+    if (incMedia) out.media = { reward: media.reward, know: media.know, recall: media.recall, levels: media.levels, levelNames: media.levelNames, wordsPerLevel: media.wordsPerLevel };
+    const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'pool.json'; a.click();
+    lastExport = Date.now(); await kvSet('lastExport', lastExport);
+    sc.remove(); renderWords(); toast(`Exported ${list.length} words · ${fmtMB(blob.size)}`);
+  };
+}
+
+/* ---------- open pool / backup into the editor ---------- */
+async function openPool() {
+  const [f] = await pickFile('.json,application/json'); if (!f) return;
+  let d; try { d = JSON.parse(await f.text()); } catch { return toast('Not a WordCrown file.'); }
+  if (d.format !== 'wordcrown' || !Array.isArray(d.words)) return toast('Not a WordCrown file.');
+  const mapId = new Map(words.map(w => [w.id, w])), mapEn = new Map(words.map(w => [norm(w.en), w]));
+  let order = nextOrder() - 1, added = 0, updated = 0; const changed = [];
+  for (const p of d.words) {
+    if (!p.en) continue;
+    const rec = { en: p.en, ipa: p.ipa || '', ru: p.ru || '', example: p.example || '', image: p.image || null, updated: p.updated || Date.now() };
+    const w = mapId.get(p.id) || mapEn.get(norm(p.en));
+    if (w) { Object.assign(w, rec); changed.push(w); updated++; }
+    else { const nw = { id: p.id || uid(), order: ++order, imageName: '', ...rec }; words.push(nw); changed.push(nw); added++; }
+  }
+  await putWords(changed);
+  if (d.media) {
+    ['reward', 'know', 'recall'].forEach(k => { if (d.media[k]) media[k] = d.media[k]; });
+    Object.assign(media.levels, d.media.levels || {});
+    if (Array.isArray(d.media.levelNames)) media.levelNames = d.media.levelNames;
+    if (d.media.wordsPerLevel) media.wordsPerLevel = d.media.wordsPerLevel;
+    await saveMedia(); renderMedia();
+  }
+  words.sort((a, b) => a.order - b.order); renderWords();
+  toast(`Opened · ${added} added · ${updated} updated`);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target;
+  const tabB = t.closest('[data-tab]');
+  if (tabB) { document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b === tabB)); $('#t-words').classList.toggle('hidden', tabB.dataset.tab !== 'words'); $('#t-media').classList.toggle('hidden', tabB.dataset.tab !== 'media'); if (tabB.dataset.tab === 'media') renderMedia(); return; }
+  const fb = t.closest('[data-f]'); if (fb) { filter = fb.dataset.f; return renderWords(); }
+  const r = t.closest('[data-r]');
+  if (r) {
+    const id = r.closest('tr').dataset.id, w = words.find(x => x.id === id), i = words.indexOf(w);
+    if (r.dataset.r === 'edit') return openWord(id);
+    if (r.dataset.r === 'say') return speak(w.en + '. ' + (w.example || ''));
+    if (r.dataset.r === 'del') { if (!confirm(`Delete "${w.en}"? (It stays on her phone if already sent.)`)) return; words.splice(i, 1); await tx('words', 'readwrite', s => { s.delete(id); }); return renderWords(); }
+    if (r.dataset.r === 'up' || r.dataset.r === 'down') {
+      const j = r.dataset.r === 'up' ? i - 1 : i + 1; if (j < 0 || j >= words.length) return;
+      [words[i].order, words[j].order] = [words[j].order, words[i].order]; [words[i], words[j]] = [words[j], words[i]];
+      await putWords([words[i], words[j]]); return renderWords();
+    }
+  }
+  if (t.closest('tr[data-id] .en')) return openWord(t.closest('tr').dataset.id);
+  const pk = t.closest('[data-pick]'); if (pk) return pickMedia(pk.dataset.pick);
+  const cl = t.closest('[data-clear]'); if (cl) { media[cl.dataset.clear] = null; await saveMedia(); $('#info-' + cl.dataset.clear).textContent = ''; return renderMedia(); }
+  const lv = t.closest('[data-lv]'); if (lv) { const [f] = await pickFile('image/*'); if (!f) return; media.levels[lv.dataset.lv] = await processImage(f, 700); await saveMedia(); return renderMedia(); }
+  const lc = t.closest('[data-lvclear]'); if (lc) { delete media.levels[lc.dataset.lvclear]; await saveMedia(); return renderMedia(); }
+  const a = t.closest('[data-a]')?.dataset.a;
+  if (a === 'add') openWord();
+  if (a === 'excel') importExcel();
+  if (a === 'images') addImages(await pickFile('image/*', true));
+  if (a === 'template') downloadTemplate();
+  if (a === 'export') exportDialog();
+  if (a === 'open-pool') openPool();
+});
+document.addEventListener('change', async e => {
+  const n = e.target.dataset?.lvname; if (n) { media.levelNames[n - 1] = e.target.value.trim() || DEFAULT_LEVEL_NAMES[n - 1]; await saveMedia(); }
+  if (e.target.id === 'per') { media.wordsPerLevel = Math.max(10, parseInt(e.target.value) || 100); await saveMedia(); renderMedia(); }
+});
+$('#q').oninput = e => { query = e.target.value; renderWords(); };
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { if ($('.scrim')) return; e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { if (ev === 'dragleave' && e.relatedTarget) return; drop.classList.remove('over'); }));
+document.addEventListener('drop', e => { if ($('.scrim')) return; e.preventDefault(); addImages([...e.dataTransfer.files]); });
+
+(async () => {
+  db = await openDB();
+  words = ((await tx('words', 'readonly', s => s.getAll())) || []).sort((a, b) => a.order - b.order);
+  media = { ...media, ...((await kvGet('media')) || {}) };
+  lastExport = (await kvGet('lastExport')) || 0;
+  renderWords();
+})();
+</script>
+</body>
+</html>
