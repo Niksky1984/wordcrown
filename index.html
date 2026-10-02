@@ -304,7 +304,8 @@ const APP_VERSION = '1.0';
 const DAY = 86400000;
 const REVIEW_DAYS = [2, 5, 12, 30, 60, 120];   // learned-word review spacing
 const ACTIVE_CAP = 20;                           // working set size when studying "All"
-const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Grand Empress','Empress of Tongues','Empress of Words'];
+const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Empress of Tongues','Grand Empress','Empress of Worlds','Empress of the Universe'];
+const LEVELS = DEFAULT_LEVEL_NAMES.length;   // 21
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -354,7 +355,7 @@ let statsDirty = false;
 const saveStats = () => { statsDirty = false; return kvSet('stats', ST); };
 
 function levelInfo(n = learnedCount()) {
-  const per = LV.per || 100, max = 20;
+  const per = LV.per || 100, max = LEVELS;
   const lvl = Math.min(max, Math.floor(n / per) + 1);
   const done = n >= per * max;
   const inLvl = done ? per : n - (lvl - 1) * per;
@@ -380,7 +381,7 @@ async function mediaEl(key, cls = '') {
   return /^video/.test(b.type) ? `<video class="${cls}" src="${u}" autoplay muted loop playsinline></video>` : `<img class="${cls}" src="${u}" alt="">`;
 }
 function crownSVG(lvl) {
-  const t = (lvl - 1) / 19, s = 0.55 + t * 0.4;
+  const t = (lvl - 1) / (LEVELS - 1), s = 0.55 + t * 0.4;
   return `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><linearGradient id="cg${lvl}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7dcae"/><stop offset="1" stop-color="#d99a55"/></linearGradient></defs><g transform="translate(50 54) scale(${s}) translate(-50 -50)"><path d="M18 70 14 34l18 16 18-28 18 28 18-16-4 36z" fill="url(#cg${lvl})"/><rect x="18" y="73" width="64" height="9" rx="3" fill="url(#cg${lvl})"/><circle cx="14" cy="31" r="5" fill="#f7dcae"/><circle cx="50" cy="19" r="5" fill="#f7dcae"/><circle cx="86" cy="31" r="5" fill="#f7dcae"/><circle cx="50" cy="56" r="${4 + t * 3}" fill="#f2a0ba"/></g></svg>`;
 }
 async function levelArt(lvl) {
@@ -454,9 +455,9 @@ async function renderHome() {
     <div class="h-top"><div><div class="kicker">${greeting()}</div><h1>${esc(S.name || 'Your Highness')}</h1></div>
       <div class="streak"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 7 12 2 12 2z"/></svg>${st} day${st === 1 ? '' : 's'}</div></div>
     <button class="lvl-card" data-go="progress"><div class="lvl-img" id="h-art"></div>
-      <div class="lvl-info"><div class="kicker">Level ${L.lvl} of 20</div><div class="lvl-name">${esc(L.name)}</div>
+      <div class="lvl-info"><div class="kicker">Level ${L.lvl} of ${LEVELS}</div><div class="lvl-name">${esc(L.name)}</div>
       <div class="bar"><i style="width:${(L.inLvl / L.per * 100).toFixed(1)}%"></i></div>
-      <div class="sub">${L.done ? 'All 20 levels complete. Absolute royalty.' : `${L.inLvl} / ${L.per} words · ${L.per - L.inLvl} to Level ${L.lvl + 1}`}</div></div></button>
+      <div class="sub">${L.done ? `All ${LEVELS} levels complete. Absolute royalty.` : `${L.inLvl} / ${L.per} words · ${L.per - L.inLvl} to Level ${L.lvl + 1}`}</div></div></button>
     <div class="tiles"><div class="tile"><b>${Math.floor(d.ms / 60000)}</b><span>min today</span></div>
       <div class="tile"><b>${d.mastered}</b><span>learned today</span></div>
       <div class="tile"><b>${inProg}</b><span>in progress</span></div></div>
@@ -583,7 +584,7 @@ async function renderProgress() {
   const el = $('#v-progress');
   el.innerHTML = `
     <div class="v-head"><h1>Progress</h1></div>
-    <div class="panel hero"><div class="lvl-img" id="p-art"></div><div class="kicker">Level ${L.lvl} of 20</div><h2>${esc(L.name)}</h2>
+    <div class="panel hero"><div class="lvl-img" id="p-art"></div><div class="kicker">Level ${L.lvl} of ${LEVELS}</div><h2>${esc(L.name)}</h2>
       <div class="bar" style="height:10px"><i style="width:${(L.inLvl / L.per * 100).toFixed(1)}%"></i></div>
       <div class="sub">${L.done ? 'Every level conquered.' : `${L.inLvl} of ${L.per} words · next: ${esc(LV.names[L.lvl] || '')}`}</div></div>
     <div class="tiles" style="grid-template-columns:repeat(2,1fr)">
@@ -600,7 +601,7 @@ async function renderProgress() {
     <div class="panel" style="padding:16px 8px 10px"><div class="kicker" style="margin:0 8px 12px">The road to the throne</div><div class="path" id="path"></div></div>`;
   $('#p-art').innerHTML = await levelArt(L.lvl);
   const nodes = [];
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= LEVELS; i++) {
     const cls = (i < L.lvl || L.done) ? 'done' : i === L.lvl ? 'cur' : 'locked';
     nodes.push(`<div class="node ${cls}"><div class="ring"><div class="in">${(await imgURL('media:level:' + i)) ? `<img src="${imgCache.get('media:level:' + i)}" alt="">` : i}</div></div><span>${esc(LV.names[i - 1])}</span></div>`);
   }
@@ -672,7 +673,7 @@ async function applyMedia(m) {
   if (m.levels && Object.keys(m.levels).length) notes.push('level art');
   await tx('blobs', 'readwrite', s => puts.forEach(([k, b]) => s.put(b, k)));
   puts.forEach(([k]) => dropURL(k));
-  if (Array.isArray(m.levelNames) && m.levelNames.length === 20) LV.names = m.levelNames.map((n, i) => n || DEFAULT_LEVEL_NAMES[i]);
+  if (Array.isArray(m.levelNames) && m.levelNames.length === LEVELS) LV.names = m.levelNames.map((n, i) => n || DEFAULT_LEVEL_NAMES[i]);
   if (m.wordsPerLevel > 0) LV.per = +m.wordsPerLevel;
   await kvSet('levels', LV);
   return [...new Set(notes)];
@@ -721,7 +722,7 @@ async function backup() {
   const out = { format: 'wordcrown', version: 1, kind: 'backup', exported: new Date().toISOString(), settings: S, stats: ST, words: [], media: { levels: {}, levelNames: LV.names, wordsPerLevel: LV.per } };
   for (const w of words) { const b = await blobGet('img:' + w.id); out.words.push({ ...w, image: b ? await blobToDataURL(b) : '' }); }
   for (const k of ['reward', 'know', 'recall']) { const b = await blobGet('media:' + k); if (b) out.media[k] = await blobToDataURL(b); }
-  for (let i = 1; i <= 20; i++) { const b = await blobGet('media:level:' + i); if (b) out.media.levels[i] = await blobToDataURL(b); }
+  for (let i = 1; i <= LEVELS; i++) { const b = await blobGet('media:level:' + i); if (b) out.media.levels[i] = await blobToDataURL(b); }
   const name = `WordCrown_backup_${ymd()}.json`;
   const file = new File([JSON.stringify(out)], name, { type: 'application/json' });
   try {
@@ -880,7 +881,7 @@ async function checkLevelUp() {
   if (L.lvl > (S.maxLevelSeen || 1)) {
     S.maxLevelSeen = L.lvl; saveSettings();
     const art = await levelArt(L.lvl);
-    const sc = openScrim(`<div class="rw"><div class="kicker">Level up</div><h2>${esc(L.name)}</h2><div class="meta">Level ${L.lvl} of 20 · ${L.total} words learned</div>
+    const sc = openScrim(`<div class="rw"><div class="kicker">Level up</div><h2>${esc(L.name)}</h2><div class="meta">Level ${L.lvl} of ${LEVELS} · ${L.total} words learned</div>
       <div class="rw-media" style="display:grid;place-items:center">${art}</div><button class="primary" data-a="ok">Keep going</button></div>`);
     confetti(120);
     sc.addEventListener('click', e => { if (e.target.closest('[data-a]')) sc.close(); });

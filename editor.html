@@ -129,7 +129,7 @@ td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
     </div>
     <div style="display:flex;align-items:baseline;gap:14px"><div class="h2">Levels</div>
       <label class="note" style="margin:0">Words per level <input id="per" type="number" min="10" max="1000" style="width:80px;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:6px 8px;margin-left:6px"></label></div>
-    <p class="note">20 levels. Level 1 is where she starts; each level completes after the set number of learned words (100 → Level 2 at 100 words, Level 3 at 200…). Click a tile to set its picture (square works best). Until a picture is set, the app shows a golden crown that grows with each level.</p>
+    <p class="note">21 levels. Level 1 is where she starts; each level completes after the set number of learned words (100 → Level 2 at 100 words, Level 3 at 200…). Click a tile to set its picture (square works best). Until a picture is set, the app shows a golden crown that grows with each level.</p>
     <div class="levels" id="levels"></div>
   </section>
 </main>
@@ -138,7 +138,8 @@ td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
 
 <script>
 'use strict';
-const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Grand Empress','Empress of Tongues','Empress of Words'];
+const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Empress of Tongues','Grand Empress','Empress of Worlds','Empress of the Universe'];
+const LEVELS = DEFAULT_LEVEL_NAMES.length;   // 21
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
@@ -314,7 +315,7 @@ function renderMedia() {
   $('#pv-recall').innerHTML = mediaHTML(media.recall) || 'Default shimmer';
   ['reward', 'know', 'recall'].forEach(k => { const v = $('#pv-' + k + ' video'); if (v && k !== 'reward') { v.controls = false; v.muted = true; v.loop = true; v.autoplay = true; v.play().catch(() => {}); } });
   $('#per').value = media.wordsPerLevel;
-  $('#levels').innerHTML = Array.from({ length: 20 }, (_, i) => {
+  $('#levels').innerHTML = Array.from({ length: LEVELS }, (_, i) => {
     const n = i + 1, u = media.levels[n];
     return `<div class="lv"><div class="lvh"><span>LEVEL ${n} · ${(n - 1) * media.wordsPerLevel}+</span>${u ? `<button data-lvclear="${n}">remove</button>` : ''}</div>
       <div class="prev" data-lv="${n}">${u ? `<img src="${u}" alt="">` : `<b>${n}</b>`}</div>
@@ -442,6 +443,7 @@ document.addEventListener('drop', e => { if ($('.scrim')) return; e.preventDefau
   db = await openDB();
   words = ((await tx('words', 'readonly', s => s.getAll())) || []).sort((a, b) => a.order - b.order);
   media = { ...media, ...((await kvGet('media')) || {}) };
+  if (!Array.isArray(media.levelNames) || media.levelNames.length !== LEVELS) media.levelNames = DEFAULT_LEVEL_NAMES.slice();
   lastExport = (await kvGet('lastExport')) || 0;
   renderWords();
 })();
