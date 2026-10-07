@@ -1,0 +1,690 @@
+{
+ "format": "wordcrown",
+ "version": 2,
+ "kind": "site",
+ "updated": "2026-10-07T19:32:23.977Z",
+ "words": [
+  {
+   "id": "e42f47c3-c01c-5be2-a3e2-fda05dc4f434",
+   "en": "preserved",
+   "ipa": "/prɪˈzɜːvd/",
+   "ru": "сохранившийся",
+   "example": "The boat was preserved in the wet mud for thousands of years.",
+   "updated": 1790966525376,
+   "image": "content/img/preserved-6891389fbb.webp"
+  },
+  {
+   "id": "4607574c-ef0c-514f-a4e1-967fb1c13cb8",
+   "en": "discovered",
+   "ipa": "/dɪˈskʌvəd/",
+   "ru": "обнаружен",
+   "example": "The old boat was discovered by workers building a road.",
+   "updated": 1790966525376,
+   "image": "content/img/discovered-2140dbdebd.webp"
+  },
+  {
+   "id": "6aaffad9-2ac4-518d-b38b-c225611ff6eb",
+   "en": "muddy hole",
+   "ipa": "/ˈmʌdi həʊl/",
+   "ru": "грязная яма",
+   "example": "The workers found the wood at the bottom of a muddy hole.",
+   "updated": 1790966525376,
+   "image": "content/img/muddy-hole-c27ee306df.webp"
+  },
+  {
+   "id": "d4db08bd-3504-54ec-926f-d380a2c73835",
+   "en": "has had",
+   "ipa": "/hæz hæd/",
+   "ru": "оказал, имел",
+   "example": "The find has had a big effect on our town.",
+   "updated": 1790966525376,
+   "image": "content/img/has-had-1769783fcd.webp"
+  },
+  {
+   "id": "4b1f1286-293c-5d9e-ab86-bf2d8ec47b39",
+   "en": "profound",
+   "ipa": "/prəˈfaʊnd/",
+   "ru": "глубокий",
+   "example": "The discovery had a profound effect on historians.",
+   "updated": 1790966525376,
+   "image": "content/img/profound-489e804bc6.webp"
+  },
+  {
+   "id": "30d0bb87-f568-5cea-9796-8df8015763ca",
+   "en": "impact",
+   "ipa": "/ˈɪmpækt/",
+   "ru": "влияние",
+   "example": "Her teacher had a huge impact on her life.",
+   "updated": 1790966525376,
+   "image": "content/img/impact-2f2173f95e.webp"
+  },
+  {
+   "id": "9d49ce6c-b859-5d0d-baee-d7edbc8b99a0",
+   "en": "research",
+   "ipa": "/rɪˈsɜːtʃ/",
+   "ru": "исследование",
+   "example": "Their research took more than ten years.",
+   "updated": 1790966525376,
+   "image": "content/img/research-a1a6d9d624.webp"
+  },
+  {
+   "id": "893bd5c3-14bf-5cfc-b28a-b01ef2baf545",
+   "en": "ancient port",
+   "ipa": "/ˈeɪnʃənt pɔːt/",
+   "ru": "древний порт",
+   "example": "Ships from many lands visited the ancient port.",
+   "updated": 1790966525376,
+   "image": "content/img/ancient-port-05741c3fa6.webp"
+  },
+  {
+   "id": "fd95cc15-aeed-5281-acb9-3aac6ed781ce",
+   "en": "land link",
+   "ipa": "/ˈlænd lɪŋk/",
+   "ru": "сухопутная связь",
+   "example": "Long ago there was a land link between Britain and Europe.",
+   "updated": 1790966525376,
+   "image": "content/img/land-link-b3bdee16ab.webp"
+  },
+  {
+   "id": "25359f6e-f7a7-5adb-a6ad-acd7a1e0aafb",
+   "en": "alongside",
+   "ipa": "/əˌlɒŋˈsaɪd/",
+   "ru": "рядом с",
+   "example": "A small boat was tied up alongside the big ship.",
+   "updated": 1790966525376,
+   "image": "content/img/alongside-9d4a092d2a.webp"
+  },
+  {
+   "id": "55605d0e-f3d8-567a-8bbe-28f55510762d",
+   "en": "recording",
+   "ipa": "/rɪˈkɔːdɪŋ/",
+   "ru": "фиксация, запись",
+   "example": "Careful recording of every find is very important.",
+   "updated": 1790966525376,
+   "image": "content/img/recording-18a90f9d5d.webp"
+  },
+  {
+   "id": "d68f76f4-9290-5c17-91d5-1d3cdc41f814",
+   "en": "discoveries",
+   "ipa": "/dɪˈskʌvəriz/",
+   "ru": "открытия, находки",
+   "example": "The museum shows the latest discoveries.",
+   "updated": 1790966525376,
+   "image": "content/img/discoveries-c94a4203c9.webp"
+  },
+  {
+   "id": "16edbdbb-a982-5812-b5f8-9e401ea331e9",
+   "en": "shaft",
+   "ipa": "/ʃɑːft/",
+   "ru": "шахта",
+   "example": "The workers dug a deep shaft under the street.",
+   "updated": 1790966525376,
+   "image": "content/img/shaft-de9a86eb03.webp"
+  },
+  {
+   "id": "a8e2efec-313b-5ec5-9eef-9160e9dfa57e",
+   "en": "modern",
+   "ipa": "/ˈmɒdn/",
+   "ru": "современный",
+   "example": "The old boat lay under a modern road.",
+   "updated": 1790966525376,
+   "image": "content/img/modern-f26a5450d0.webp"
+  },
+  {
+   "id": "226fe21a-162a-51b6-9b14-6c24a6e38aff",
+   "en": "revealed",
+   "ipa": "/rɪˈviːld/",
+   "ru": "обнаружен, раскрыт",
+   "example": "The digging revealed a piece of carved wood.",
+   "updated": 1790966525376,
+   "image": "content/img/revealed-a2c8f31964.webp"
+  },
+  {
+   "id": "862161f6-020c-5e2f-bddd-313a8c1c3ebb",
+   "en": "waterlogged",
+   "ipa": "/ˈwɔːtəlɒɡd/",
+   "ru": "пропитанный водой, заболоченный",
+   "example": "Wood survives well in waterlogged ground.",
+   "updated": 1790966525376,
+   "image": "content/img/waterlogged-1e3e7c5964.webp"
+  },
+  {
+   "id": "22fe9577-4053-5ea6-85fa-b4844076861d",
+   "en": "overlying",
+   "ipa": "/ˌəʊvəˈlaɪɪŋ/",
+   "ru": "вышележащий",
+   "example": "They removed the overlying soil very slowly.",
+   "updated": 1790966525376,
+   "image": "content/img/overlying-6e607f4c07.webp"
+  },
+  {
+   "id": "d666a50b-23cd-5bd5-8a06-176ecb37f8dc",
+   "en": "timbers",
+   "ipa": "/ˈtɪmbəz/",
+   "ru": "брёвна, деревянные части",
+   "example": "The boat's timbers were dark and soft.",
+   "updated": 1790966525376,
+   "image": "content/img/timbers-6bdad36212.webp"
+  },
+  {
+   "id": "aca04867-dd55-5d4b-b4f4-7acdd9141f5b",
+   "en": "realised",
+   "ipa": "/ˈrɪəlaɪzd/",
+   "ru": "осознал, понял",
+   "example": "She realised that the wood was very old.",
+   "updated": 1790966525376,
+   "image": "content/img/realised-d2b58ff9d2.webp"
+  },
+  {
+   "id": "63b9566f-45ab-574b-a5bf-8baa4c08c60e",
+   "en": "prehistoric",
+   "ipa": "/ˌpriːhɪˈstɒrɪk/",
+   "ru": "доисторический",
+   "example": "Prehistoric people made boats from tree trunks.",
+   "updated": 1790966525376,
+   "image": "content/img/prehistoric-9b951c32d0.webp"
+  },
+  {
+   "id": "ee4f0458-e978-5acd-bf1f-500e45c52109",
+   "en": "sediment",
+   "ipa": "/ˈsedɪmənt/",
+   "ru": "осадок, отложения",
+   "example": "A thick layer of sediment covered the river bed.",
+   "updated": 1790966525376,
+   "image": "content/img/sediment-e2ec831523.webp"
+  },
+  {
+   "id": "713ba26d-be07-5a2c-9add-c2466cf4ded2",
+   "en": "buried",
+   "ipa": "/ˈberid/",
+   "ru": "погребённый, закопанный",
+   "example": "The treasure was buried under the sand.",
+   "updated": 1790966525376,
+   "image": "content/img/buried-5ebb713bc0.webp"
+  },
+  {
+   "id": "71f3d29e-a57a-5d8c-b1f5-610b4d10da5d",
+   "en": "recovered",
+   "ipa": "/rɪˈkʌvəd/",
+   "ru": "извлечённый, поднятый",
+   "example": "Divers recovered the bell from the sea floor.",
+   "updated": 1790966525376,
+   "image": "content/img/recovered-033a531b4f.webp"
+  },
+  {
+   "id": "6d037378-b8a6-5d29-8e0d-49fe8ae797f5",
+   "en": "end lay beyond",
+   "ipa": "/end leɪ bɪˈjɒnd/",
+   "ru": "конец лежал за пределами",
+   "example": "One end lay beyond the edge of the dig.",
+   "updated": 1790966525376,
+   "image": "content/img/end-lay-beyond-9f2cae5bfe.webp"
+  },
+  {
+   "id": "3c9254de-3437-522b-92fb-286b1514cc8b",
+   "en": "excavation",
+   "ipa": "/ˌekskəˈveɪʃn/",
+   "ru": "раскопки",
+   "example": "The excavation lasted all summer.",
+   "updated": 1790966525376,
+   "image": "content/img/excavation-bf93766def.webp"
+  },
+  {
+   "id": "c1cfa56e-9a87-5491-9a86-9b3897021c50",
+   "en": "survived",
+   "ipa": "/səˈvaɪvd/",
+   "ru": "сохранился, уцелел",
+   "example": "Only half of the boat survived.",
+   "updated": 1790966525376,
+   "image": "content/img/survived-88d4820d03.webp"
+  },
+  {
+   "id": "75d6e9aa-d3eb-58ae-b0fe-fabe0bbef3bd",
+   "en": "consisted essentially of",
+   "ipa": "/kənˈsɪstɪd ɪˈsenʃəli əv/",
+   "ru": "состоял по сути из",
+   "example": "The boat consisted essentially of six large planks.",
+   "updated": 1790966525376,
+   "image": "content/img/consisted-essentially-of-b68bec1452.webp"
+  },
+  {
+   "id": "613585a4-b6b7-541d-9d87-c622b9407734",
+   "en": "intricately",
+   "ipa": "/ˈɪntrɪkətli/",
+   "ru": "замысловато, искусно",
+   "example": "The box was intricately carved.",
+   "updated": 1790966525376,
+   "image": "content/img/intricately-ef98c7672d.webp"
+  },
+  {
+   "id": "d93cc975-de5b-5318-9b64-425e0b4a730d",
+   "en": "oak planks",
+   "ipa": "/əʊk plæŋks/",
+   "ru": "дубовые доски",
+   "example": "The floor was made of thick oak planks.",
+   "updated": 1790966525376,
+   "image": "content/img/oak-planks-5e080ce14b.webp"
+  },
+  {
+   "id": "687887d4-f3d8-53c6-972f-cd63a781bb03",
+   "en": "seam",
+   "ipa": "/siːm/",
+   "ru": "шов",
+   "example": "Water came in through a seam in the boat.",
+   "updated": 1790966525376,
+   "image": "content/img/seam-d9ba8ce1e0.webp"
+  },
+  {
+   "id": "efb2ba8b-b6f8-5ad4-a752-25f0aba571e8",
+   "en": "complicated",
+   "ipa": "/ˈkɒmplɪkeɪtɪd/",
+   "ru": "сложный",
+   "example": "This puzzle is too complicated for me.",
+   "updated": 1790966525376,
+   "image": "content/img/complicated-bc0193dbbd.webp"
+  },
+  {
+   "id": "36f775d8-23b4-5b1e-9d31-b7921df0a1ef",
+   "en": "wedges",
+   "ipa": "/ˈwedʒɪz/",
+   "ru": "клинья",
+   "example": "They used wooden wedges to hold the planks tight.",
+   "updated": 1790966525376,
+   "image": "content/img/wedges-dd521cadbf.webp"
+  },
+  {
+   "id": "52c7bcfd-b7cc-563b-a020-84294b3ca83e",
+   "en": "curved and stitched",
+   "ipa": "/kɜːvd ən stɪtʃt/",
+   "ru": "изогнутые и сшитые",
+   "example": "The sides were curved and stitched together.",
+   "updated": 1790966525376,
+   "image": "content/img/curved-and-stitched-a4244073bd.webp"
+  },
+  {
+   "id": "bd7ef5ec-2afb-547f-9cfa-969cbf876405",
+   "en": "watertight",
+   "ipa": "/ˈwɔːtətaɪt/",
+   "ru": "водонепроницаемый",
+   "example": "My new watch is watertight.",
+   "updated": 1790966525376,
+   "image": "content/img/watertight-59ea651cf2.webp"
+  },
+  {
+   "id": "4e3570b6-c7bf-5e9a-bb0c-ded4f2bb91c2",
+   "en": "pads of moss",
+   "ipa": "/pædz əv mɒs/",
+   "ru": "подушечки мха",
+   "example": "Pads of moss filled the gaps between the planks.",
+   "updated": 1790966525376,
+   "image": "content/img/pads-of-moss-a2283403e3.webp"
+  },
+  {
+   "id": "93e1406a-d952-5e75-a2f7-3d7c56458871",
+   "en": "yew stitches",
+   "ipa": "/juː ˈstɪtʃɪz/",
+   "ru": "тисовые стежки",
+   "example": "Yew stitches held the planks together.",
+   "updated": 1790966525376,
+   "image": "content/img/yew-stitches-105bd1e8b3.webp"
+  },
+  {
+   "id": "67356f61-d7f8-5390-864b-fe9580451eef",
+   "en": "antiquity",
+   "ipa": "/ænˈtɪkwəti/",
+   "ru": "древность",
+   "example": "This statue comes from antiquity.",
+   "updated": 1790966525376,
+   "image": "content/img/antiquity-cee0db83d1.webp"
+  },
+  {
+   "id": "9d37aef3-33d5-54b4-83ca-98e7c1d34f94",
+   "en": "abandoned",
+   "ipa": "/əˈbændənd/",
+   "ru": "заброшенный, оставленный",
+   "example": "We found an abandoned house in the forest.",
+   "updated": 1790966525376,
+   "image": "content/img/abandoned-c312aadc1c.webp"
+  },
+  {
+   "id": "4539bf8f-58c7-5be0-88cf-8688f19061e5",
+   "en": "deduced",
+   "ipa": "/dɪˈdjuːst/",
+   "ru": "сделал вывод, вывел",
+   "example": "From the footprints, he deduced that a cat had been there.",
+   "updated": 1790966525376,
+   "image": "content/img/deduced-3b8490c443.webp"
+  },
+  {
+   "id": "0702fe71-effb-5225-a063-e81c4a2c7fcf",
+   "en": "evidence",
+   "ipa": "/ˈevɪdəns/",
+   "ru": "доказательства, свидетельства",
+   "example": "There is no evidence that he was there.",
+   "updated": 1790966525376,
+   "image": "content/img/evidence-f1ce972d0d.webp"
+  },
+  {
+   "id": "2ccfcba8-391a-5067-b11b-5a39a478902d",
+   "en": "missing upper part",
+   "ipa": "/ˈmɪsɪŋ ˈʌpə pɑːt/",
+   "ru": "отсутствующая верхняя часть",
+   "example": "Nobody knows what the missing upper part looked like.",
+   "updated": 1790966525376,
+   "image": "content/img/missing-upper-part-70bad2c27d.webp"
+  },
+  {
+   "id": "55c40d7c-568c-58a6-946d-38cc9a44235c",
+   "en": "wreck",
+   "ipa": "/rek/",
+   "ru": "обломки, крушение",
+   "example": "Divers swam around the old wreck.",
+   "updated": 1790966525376,
+   "image": "content/img/wreck-a26c756b66.webp"
+  },
+  {
+   "id": "99d1873c-763a-5960-89be-2322c271401d",
+   "en": "deliberately",
+   "ipa": "/dɪˈlɪbərətli/",
+   "ru": "намеренно",
+   "example": "He broke the vase deliberately.",
+   "updated": 1790966525376,
+   "image": "content/img/deliberately-2842a9a207.webp"
+  },
+  {
+   "id": "5054376c-8b11-5be8-b1f3-1d524d455c8c",
+   "en": "discarded",
+   "ipa": "/dɪˈskɑːdɪd/",
+   "ru": "выброшенный, отброшенный",
+   "example": "The discarded boat was left in the river.",
+   "updated": 1790966525376,
+   "image": "content/img/discarded-381408356d.webp"
+  },
+  {
+   "id": "7cad648a-7c6d-54f5-b6e6-e5e057f82194",
+   "en": "dismantled",
+   "ipa": "/dɪsˈmæntld/",
+   "ru": "разобранный, демонтированный",
+   "example": "The old bridge was dismantled piece by piece.",
+   "updated": 1790966525376,
+   "image": "content/img/dismantled-43fa46add1.webp"
+  },
+  {
+   "id": "40cda20d-ccd7-545a-a181-1f699504c4c7",
+   "en": "hindsight",
+   "ipa": "/ˈhaɪndsaɪt/",
+   "ru": "взгляд в прошлое, «задним числом»",
+   "example": "With hindsight, I should have taken an umbrella.",
+   "updated": 1790966525376,
+   "image": "content/img/hindsight-68aae735fd.webp"
+  },
+  {
+   "id": "d4593d3b-6cf0-5def-96c0-9ac04d702b6d",
+   "en": "mainstream",
+   "ipa": "/ˈmeɪnstriːm/",
+   "ru": "господствующая тенденция, мейнстрим",
+   "example": "His ideas are now part of the mainstream.",
+   "updated": 1790966525376,
+   "image": "content/img/mainstream-298b6f06e3.webp"
+  },
+  {
+   "id": "38e677da-f42b-565b-938d-d6aa20312f8e",
+   "en": "considered",
+   "ipa": "/kənˈsɪdəd/",
+   "ru": "рассмотренный, считавшийся",
+   "example": "She is considered the best singer in the class.",
+   "updated": 1790966525376,
+   "image": "content/img/considered-68a5d5b49a.webp"
+  },
+  {
+   "id": "2378ee7c-3835-5c45-81a9-186b29cbc3da",
+   "en": "narrower",
+   "ipa": "/ˈnærəʊə/",
+   "ru": "более узкий",
+   "example": "This road is narrower than the main street.",
+   "updated": 1790966525376,
+   "image": "content/img/narrower-9b02830732.webp"
+  },
+  {
+   "id": "95db0eca-fdc4-5703-83a0-3bbb559a8ad7",
+   "en": "reached",
+   "ipa": "/riːtʃt/",
+   "ru": "достиг, достигнутый",
+   "example": "We finally reached the top of the hill.",
+   "updated": 1790966525376,
+   "image": "content/img/reached-00d15b0fc0.webp"
+  },
+  {
+   "id": "1de50b97-1bbe-56d1-8d73-4b8b6bd286d9",
+   "en": "anniversary",
+   "ipa": "/ˌænɪˈvɜːsəri/",
+   "ru": "годовщина",
+   "example": "My parents celebrate their anniversary in June.",
+   "updated": 1790966525376,
+   "image": "content/img/anniversary-49413ad4de.webp"
+  },
+  {
+   "id": "5aaf5afe-694b-52d8-88c9-dd5ed5130041",
+   "en": "apparent",
+   "ipa": "/əˈpærənt/",
+   "ru": "очевидный",
+   "example": "It soon became apparent that we were lost.",
+   "updated": 1790966525376,
+   "image": "content/img/apparent-f17d2d88cd.webp"
+  },
+  {
+   "id": "651062a1-01b5-52f6-b97b-95d1fbd6083c",
+   "en": "explored",
+   "ipa": "/ɪkˈsplɔːd/",
+   "ru": "исследовал, исследованный",
+   "example": "They explored the cave with torches.",
+   "updated": 1790966525376,
+   "image": "content/img/explored-6d8144a340.webp"
+  },
+  {
+   "id": "6099b48d-5474-59c8-b4e3-37cf71c4e2d8",
+   "en": "overseas",
+   "ipa": "/ˌəʊvəˈsiːz/",
+   "ru": "за границей, за рубежом",
+   "example": "My uncle works overseas.",
+   "updated": 1790966525376,
+   "image": "content/img/overseas-adc2583617.webp"
+  },
+  {
+   "id": "6cf661a6-2a0c-55eb-b476-19d6eaafc791",
+   "en": "renewed",
+   "ipa": "/rɪˈnjuːd/",
+   "ru": "возобновлённый",
+   "example": "There is renewed interest in the old boat.",
+   "updated": 1790966525376,
+   "image": "content/img/renewed-540a2d3184.webp"
+  },
+  {
+   "id": "6f8483f9-2e5c-5fcd-973e-e435e51932d6",
+   "en": "conserved",
+   "ipa": "/kənˈsɜːvd/",
+   "ru": "сохранённый, законсервированный",
+   "example": "The timbers were conserved in a special lab.",
+   "updated": 1790966525376,
+   "image": "content/img/conserved-6836610fb6.webp"
+  },
+  {
+   "id": "9f3629af-b50e-555e-9f57-16f24dd66d78",
+   "en": "displayed",
+   "ipa": "/dɪˈspleɪd/",
+   "ru": "выставлен (на показ)",
+   "example": "The boat is now displayed in a museum.",
+   "updated": 1790966525376,
+   "image": "content/img/displayed-e284264cff.webp"
+  },
+  {
+   "id": "034f42da-3eb4-5f39-a05b-30069876cacb",
+   "en": "resolved",
+   "ipa": "/rɪˈzɒlvd/",
+   "ru": "решённый",
+   "example": "The problem was resolved quickly.",
+   "updated": 1790966525376,
+   "image": "content/img/resolved-af951afd5a.webp"
+  },
+  {
+   "id": "cb08403d-e65c-5e20-a9d5-8b0428b7a942",
+   "en": "permit assessment",
+   "ipa": "/ˈpɜːmɪt əˈsesmənt/",
+   "ru": "оценка для выдачи разрешения",
+   "example": "The project must pass a permit assessment first.",
+   "updated": 1790966525376,
+   "image": "content/img/permit-assessment-f7a949c1e5.webp"
+  },
+  {
+   "id": "b8d616dc-e861-5893-83c9-f67d27c7c06d",
+   "en": "regarding",
+   "ipa": "/rɪˈɡɑːdɪŋ/",
+   "ru": "относительно, касательно",
+   "example": "I have a question regarding the homework.",
+   "updated": 1790966525376,
+   "image": "content/img/regarding-69b79cafb3.webp"
+  },
+  {
+   "id": "7c8c2932-2f17-5524-b796-60be30de6380",
+   "en": "returning",
+   "ipa": "/rɪˈtɜːnɪŋ/",
+   "ru": "возвращаясь, возвращение",
+   "example": "Returning home, she saw a rainbow.",
+   "updated": 1790966525376,
+   "image": "content/img/returning-0b89566d35.webp"
+  },
+  {
+   "id": "b4efa6fa-a6f8-5c78-ad46-ea6836957f0a",
+   "en": "unexcavated",
+   "ipa": "/ʌnˈekskəveɪtɪd/",
+   "ru": "нераскопанный",
+   "example": "The unexcavated part may still hide more wood.",
+   "updated": 1790966525376,
+   "image": "content/img/unexcavated-40c5f7887c.webp"
+  },
+  {
+   "id": "4c60f0e5-11be-538d-a4c5-c37ae9f9beec",
+   "en": "insurmountable",
+   "ipa": "/ˌɪnsəˈmaʊntəbl/",
+   "ru": "непреодолимый",
+   "example": "The problem seemed insurmountable at first.",
+   "updated": 1790966525376,
+   "image": "content/img/insurmountable-e9a774284b.webp"
+  },
+  {
+   "id": "8fac33cc-b9b9-5c87-925c-8a1c9ab4a396",
+   "en": "previous decade",
+   "ipa": "/ˈpriːviəs ˈdekeɪd/",
+   "ru": "предыдущее десятилетие",
+   "example": "Prices were lower in the previous decade.",
+   "updated": 1790966525376,
+   "image": "content/img/previous-decade-b89d039828.webp"
+  },
+  {
+   "id": "feafbf3e-9aac-5e3c-b7f5-f7e4c37e0e15",
+   "en": "proposals",
+   "ipa": "/prəˈpəʊzlz/",
+   "ru": "предложения",
+   "example": "The class made three proposals for the trip.",
+   "updated": 1790966525376,
+   "image": "content/img/proposals-ee83f6d322.webp"
+  },
+  {
+   "id": "957a64a9-72d4-5f0f-bf38-14071afd9a1a",
+   "en": "drawn up",
+   "ipa": "/drɔːn ʌp/",
+   "ru": "составлен",
+   "example": "A new plan was drawn up.",
+   "updated": 1790966525376,
+   "image": "content/img/drawn-up-c6f7e8c55f.webp"
+  },
+  {
+   "id": "f6fada8b-bcdb-5268-9545-76eed7f25fa3",
+   "en": "straddling",
+   "ipa": "/ˈstrædlɪŋ/",
+   "ru": "расположенный по обе стороны",
+   "example": "The park is straddling the border of two towns.",
+   "updated": 1790966525376,
+   "image": "content/img/straddling-2ebc30fa53.webp"
+  },
+  {
+   "id": "34c2a53c-a367-5271-975b-c609b347a5c4",
+   "en": "borders",
+   "ipa": "/ˈbɔːdəz/",
+   "ru": "границы",
+   "example": "Rivers often form borders between countries.",
+   "updated": 1790966525376,
+   "image": "content/img/borders-3ebfe76a60.webp"
+  },
+  {
+   "id": "e85a113d-746f-55dc-b58b-4603bf6bc532",
+   "en": "duty",
+   "ipa": "/ˈdjuːti/",
+   "ru": "долг, обязанность",
+   "example": "It is our duty to help others.",
+   "updated": 1790966525376,
+   "image": "content/img/duty-089b78f28e.webp"
+  },
+  {
+   "id": "61146abc-f9e0-52f6-977c-d8118233f3d0",
+   "en": "heritage",
+   "ipa": "/ˈherɪtɪdʒ/",
+   "ru": "наследие",
+   "example": "Old buildings are part of our heritage.",
+   "updated": 1790966525376,
+   "image": "content/img/heritage-70f84a3771.webp"
+  }
+ ],
+ "media": {
+  "reward": "content/media/reward-a23a29742b.mp4",
+  "know": "content/media/know-f8ae00cc0e.gif",
+  "recall": "content/media/recall-19f59c345d.gif",
+  "levels": {
+   "1": "content/levels/level-01-adf285df61.webp",
+   "2": "content/levels/level-02-1a6ae5406b.webp",
+   "3": "content/levels/level-03-82587b92e4.webp",
+   "4": "content/levels/level-04-c5cf5937ca.webp",
+   "5": "content/levels/level-05-b782d4dc24.webp",
+   "6": "content/levels/level-06-3bf0611e67.webp",
+   "7": "content/levels/level-07-c1f97f11a7.webp",
+   "8": "content/levels/level-08-d0ee505527.webp",
+   "9": "content/levels/level-09-e550072e81.webp",
+   "10": "content/levels/level-10-ea59a610aa.webp",
+   "11": "content/levels/level-11-b76ace9cac.webp",
+   "12": "content/levels/level-12-db58dd9d28.webp",
+   "13": "content/levels/level-13-68c3672462.webp",
+   "14": "content/levels/level-14-0aedf1bccf.webp",
+   "15": "content/levels/level-15-30edd332ea.webp",
+   "16": "content/levels/level-16-710a68b999.webp",
+   "17": "content/levels/level-17-9d2e884fad.webp",
+   "18": "content/levels/level-18-105416695c.webp",
+   "19": "content/levels/level-19-b82869e279.webp",
+   "20": "content/levels/level-20-ce310eaa51.webp",
+   "21": "content/levels/level-21-ce32a5ef7e.webp"
+  },
+  "levelNames": [
+   "Little Princess",
+   "Curious Princess",
+   "Princess of Letters",
+   "Keeper of Words",
+   "Lady of the Court",
+   "Young Duchess",
+   "Duchess",
+   "Archduchess",
+   "Royal Scholar",
+   "Crown Princess",
+   "Princess Regent",
+   "Queen of Phrases",
+   "Queen of the Realm",
+   "Silver Queen",
+   "Golden Queen",
+   "Sovereign",
+   "High Sovereign",
+   "Empress of Tongues",
+   "Grand Empress",
+   "Empress of Worlds",
+   "Empress of the Universe"
+  ],
+  "wordsPerLevel": 100
+ }
+}
