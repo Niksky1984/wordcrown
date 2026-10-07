@@ -68,7 +68,7 @@ td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
 .m-foot{display:flex;gap:10px;align-items:center;margin-top:16px}
 .m-foot .msg{margin-right:auto;font-size:13px}
 /* media */
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:22px}
 .mcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
 .mcard h3{margin:0 0 4px;font-size:15px}
 .mcard p{margin:0 0 12px;color:var(--muted);font-size:12.5px;line-height:1.4}
@@ -128,6 +128,12 @@ td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
       <div class="mcard"><h3>“I can't recall” button</h3><p>16:9 animation shown on the button. GIF, animated WebP or a short MP4 (silent loop).</p>
         <div class="prev" style="aspect-ratio:16/9" id="pv-recall">Default shimmer</div>
         <button class="btn" data-pick="recall">Choose file</button> <button class="btn danger" data-clear="recall">Remove</button><div id="info-recall" class="warn" style="margin-top:8px"></div></div>
+      <div class="mcard"><h3>“Next card” button</h3><p>16:9 animation on the button after the card flips. A short silent MP4 or GIF. If it has the words in the picture, no label is added.</p>
+        <div class="prev" style="aspect-ratio:16/9" id="pv-next">Plain button</div>
+        <button class="btn" data-pick="next">Choose file</button> <button class="btn danger" data-clear="next">Remove</button><div id="info-next" class="warn" style="margin-top:8px"></div></div>
+      <div class="mcard"><h3>“Actually, I got it wrong” button</h3><p>16:9 animation next to “Next card”, shown after she taps “I know it”. A short silent MP4 or GIF.</p>
+        <div class="prev" style="aspect-ratio:16/9" id="pv-oops">Plain link</div>
+        <button class="btn" data-pick="oops">Choose file</button> <button class="btn danger" data-clear="oops">Remove</button><div id="info-oops" class="warn" style="margin-top:8px"></div></div>
     </div>
     <div style="display:flex;align-items:baseline;gap:14px"><div class="h2">Levels</div>
       <label class="note" style="margin:0">Words per level <input id="per" type="number" min="10" max="1000" style="width:80px;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:6px 8px;margin-left:6px"></label></div>
@@ -160,7 +166,8 @@ const kvSet = (k, v) => tx('kv', 'readwrite', s => { s.put(v, k); });
 const putWords = ws => tx('words', 'readwrite', s => { ws.forEach(w => s.put(w)); });
 
 let words = [];   // {id,en,ipa,ru,example,image(dataURL),imageName,order,updated}
-let media = { reward: null, know: null, recall: null, levels: {}, levelNames: DEFAULT_LEVEL_NAMES.slice(), wordsPerLevel: 100, updated: 0 };
+const MEDIA_KEYS = ['reward', 'know', 'recall', 'next', 'oops'];
+let media = { reward: null, know: null, recall: null, next: null, oops: null, levels: {}, levelNames: DEFAULT_LEVEL_NAMES.slice(), wordsPerLevel: 100, updated: 0 };
 let lastExport = 0, filter = 'all', query = '';
 const complete = w => !!(w.en && w.ru && w.image);
 const saveMedia = () => { media.updated = Date.now(); return kvSet('media', media); };
@@ -315,7 +322,9 @@ function renderMedia() {
   $('#pv-reward').innerHTML = mediaHTML(media.reward) || 'None yet';
   $('#pv-know').innerHTML = mediaHTML(media.know) || 'Default shimmer';
   $('#pv-recall').innerHTML = mediaHTML(media.recall) || 'Default shimmer';
-  ['reward', 'know', 'recall'].forEach(k => { const v = $('#pv-' + k + ' video'); if (v && k !== 'reward') { v.controls = false; v.muted = true; v.loop = true; v.autoplay = true; v.play().catch(() => {}); } });
+  $('#pv-next').innerHTML = mediaHTML(media.next) || 'Plain button';
+  $('#pv-oops').innerHTML = mediaHTML(media.oops) || 'Plain link';
+  MEDIA_KEYS.forEach(k => { const v = $('#pv-' + k + ' video'); if (v && k !== 'reward') { v.controls = false; v.muted = true; v.loop = true; v.autoplay = true; v.play().catch(() => {}); } });
   $('#per').value = media.wordsPerLevel;
   $('#levels').innerHTML = Array.from({ length: LEVELS }, (_, i) => {
     const n = i + 1, u = media.levels[n];
@@ -348,7 +357,7 @@ async function pickMedia(k) {
 /* ---------- export ---------- */
 function exportDialog() {
   const ready = words.filter(complete), changed = ready.filter(w => w.updated > lastExport), skipped = words.length - ready.length;
-  const mediaSize = ['reward', 'know', 'recall'].reduce((a, k) => a + (media[k]?.length || 0), 0) + Object.values(media.levels).reduce((a, u) => a + (u?.length || 0), 0);
+  const mediaSize = MEDIA_KEYS.reduce((a, k) => a + (media[k]?.length || 0), 0) + Object.values(media.levels).reduce((a, u) => a + (u?.length || 0), 0);
   const mediaChanged = media.updated > lastExport;
   const sc = document.createElement('div'); sc.className = 'scrim';
   sc.innerHTML = `<div class="modal" style="max-width:560px"><h2>Export pool</h2>
@@ -365,7 +374,7 @@ function exportDialog() {
     if (!list.length && !incMedia) return toast('Nothing to export.');
     const out = { format: 'wordcrown', version: 1, kind: 'pool', exported: new Date().toISOString(),
       words: list.map(w => ({ id: w.id, en: w.en, ipa: w.ipa, ru: w.ru, example: w.example, image: w.image, updated: w.updated })) };
-    if (incMedia) out.media = { reward: media.reward, know: media.know, recall: media.recall, levels: media.levels, levelNames: media.levelNames, wordsPerLevel: media.wordsPerLevel };
+    if (incMedia) out.media = { reward: media.reward, know: media.know, recall: media.recall, next: media.next, oops: media.oops, levels: media.levels, levelNames: media.levelNames, wordsPerLevel: media.wordsPerLevel };
     const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = 'pool.json'; a.click();
@@ -393,7 +402,7 @@ async function mergeIntoStudio(d) {
   }
   await putWords(changed);
   if (d.media) {
-    ['reward', 'know', 'recall'].forEach(k => { if (d.media[k]) media[k] = d.media[k]; });
+    MEDIA_KEYS.forEach(k => { if (d.media[k]) media[k] = d.media[k]; });
     Object.assign(media.levels, d.media.levels || {});
     if (Array.isArray(d.media.levelNames) && d.media.levelNames.length === LEVELS) media.levelNames = d.media.levelNames;
     if (d.media.wordsPerLevel) media.wordsPerLevel = d.media.wordsPerLevel;
@@ -428,7 +437,7 @@ async function buildSite() {
     const f = await fileFor(w.image, 'img', slugify(w.en)); files.set(f.path, f.b64);
     out.words.push({ id: w.id, en: w.en, ipa: w.ipa || '', ru: w.ru, example: w.example || '', updated: w.updated || 0, image: f.path });
   }
-  for (const k of ['reward', 'know', 'recall']) if (media[k]) { const f = await fileFor(media[k], 'media', k); if (f) { files.set(f.path, f.b64); out.media[k] = f.path; } }
+  for (const k of MEDIA_KEYS) if (media[k]) { const f = await fileFor(media[k], 'media', k); if (f) { files.set(f.path, f.b64); out.media[k] = f.path; } }
   out.media.levels = {};
   for (const [n, u] of Object.entries(media.levels || {})) if (u) { const f = await fileFor(u, 'levels', 'level-' + String(n).padStart(2, '0')); if (f) { files.set(f.path, f.b64); out.media.levels[n] = f.path; } }
   out.media.levelNames = media.levelNames; out.media.wordsPerLevel = media.wordsPerLevel;
@@ -481,7 +490,7 @@ async function publishDialog() {
   const sc = document.createElement('div'); sc.className = 'scrim';
   sc.innerHTML = `<div class="modal" style="max-width:560px"><h2>Publish to site</h2>
     ${site.skipped ? `<p class="bad" style="margin:0 0 12px">${site.skipped} word(s) have no picture and are left out.</p>` : ''}
-    <p class="note"><b>${site.manifest.words.length}</b> words · <b>${Object.keys(site.manifest.media.levels).length}</b> level pictures${site.manifest.media.reward ? ' · reward video' : ''}${site.manifest.media.know ? ' · button animations' : ''}</p>
+    <p class="note"><b>${site.manifest.words.length}</b> words · <b>${Object.keys(site.manifest.media.levels).length}</b> level pictures${site.manifest.media.reward ? ' · reward video' : ''}${['know','recall','next','oops'].some(k => site.manifest.media[k]) ? ' · ' + ['know','recall','next','oops'].filter(k => site.manifest.media[k]).length + ' button animations' : ''}</p>
     <p class="note">New files to upload: <b>${upload.length}</b> (${upMB.toFixed(1)} MB)${remove.length ? ` · old files to remove: <b>${remove.length}</b>` : ''}</p>
     <p class="note" style="font-size:12.5px">Her phone downloads only the new files, next time she opens WordCrown with internet. Her progress is kept.</p>
     <div class="m-foot"><span class="msg" id="p-msg"></span><button class="btn" id="p-set">Settings</button><button class="btn" id="p-cancel">Cancel</button><button class="btn gold" id="p-go">Publish</button></div></div>`;
@@ -522,7 +531,7 @@ async function loadFromSite() {
       data = { format: 'wordcrown', words: [], media: { levels: {} } };
       for (const p of man.words) { data.words.push({ ...p, image: await get(p.image) }); toast(`Loading from the site… ${++n}/${all}`, 120000); }
       const m = man.media || {};
-      for (const k of ['reward', 'know', 'recall']) if (m[k]) data.media[k] = await get(m[k]);
+      for (const k of MEDIA_KEYS) if (m[k]) data.media[k] = await get(m[k]);
       for (const [lv, p] of Object.entries(m.levels || {})) data.media.levels[lv] = await get(p);
       data.media.levelNames = m.levelNames; data.media.wordsPerLevel = m.wordsPerLevel;
     } else {

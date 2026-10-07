@@ -222,6 +222,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 .next-row{display:flex;flex-direction:column;gap:6px}
 .next-row .primary{height:60px}
 .oops{font-size:13.5px;color:var(--muted);font-weight:600;padding:8px;align-self:center}
+/* custom 16:9 video tiles for "Next card" / "Actually, I got it wrong" */
+.next-row:not(.media) .media-only,.next-row.media .plain-only{display:none}
+.next-row.media{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.next-row.media.solo [data-action="next"]{grid-column:1/-1;justify-self:center;width:calc(50% - 6px)}
+/* tap effect */
+.ans{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.ans.tapped{animation:tap .32s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tap{0%{transform:scale(1)}35%{transform:scale(.9);filter:brightness(1.35)}100%{transform:scale(1);filter:none}}
+.ans .ring{position:absolute;border-radius:50%;pointer-events:none;border:4px solid #fff1c9;box-shadow:0 0 22px 4px rgba(255,205,110,.95),inset 0 0 22px rgba(255,215,140,.8);transform:translate(-50%,-50%) scale(.2);animation:ring .45s ease-out forwards;z-index:3}
+@keyframes ring{60%{opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.ans .flash{position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(circle at var(--x) var(--y),rgba(255,236,180,.75),rgba(255,210,120,.25) 45%,transparent 70%);animation:flash .4s ease-out forwards}
+@keyframes flash{to{opacity:0}}
+.ans .spark{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff6dc;box-shadow:0 0 10px 3px rgba(255,200,100,1);pointer-events:none;z-index:3;animation:spark .55s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
 
 /* ---------- sheets & overlays ---------- */
 .scrim{position:fixed;inset:0;background:rgba(5,3,10,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
@@ -284,8 +298,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
       <button class="ans" data-action="recall"><div class="anim" id="anim-recall"></div><span class="lbl">I can't recall</span></button>
     </div>
     <div class="next-row hidden" id="next-row">
-      <button class="primary" data-action="next">Next card <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <button class="oops" id="oops" data-action="oops">Actually, I got it wrong</button>
+      <button class="ans media-only" data-action="next" aria-label="Next card"><div class="anim" id="anim-next"></div></button>
+      <button class="ans media-only" id="oops-tile" data-action="oops" aria-label="Actually, I got it wrong"><div class="anim" id="anim-oops"></div></button>
+      <button class="primary plain-only" data-action="next">Next card <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="oops plain-only" id="oops" data-action="oops">Actually, I got it wrong</button>
     </div>
   </div>
 </div>
@@ -306,6 +322,7 @@ const REVIEW_DAYS = [2, 5, 12, 30, 60, 120];   // learned-word review spacing
 const ACTIVE_CAP = 20;                           // working set size when studying "All"
 const DEFAULT_LEVEL_NAMES = ['Little Princess','Curious Princess','Princess of Letters','Keeper of Words','Lady of the Court','Young Duchess','Duchess','Archduchess','Royal Scholar','Crown Princess','Princess Regent','Queen of Phrases','Queen of the Realm','Silver Queen','Golden Queen','Sovereign','High Sovereign','Empress of Tongues','Grand Empress','Empress of Worlds','Empress of the Universe'];
 const LEVELS = DEFAULT_LEVEL_NAMES.length;   // 21
+const MEDIA_KEYS = ['reward', 'know', 'recall', 'next', 'oops'];   // reward video + 4 button animations
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -668,7 +685,7 @@ async function applyMedia(m) {
   const notes = [];
   if (!m) return notes;
   const puts = [];
-  for (const k of ['reward', 'know', 'recall']) if (m[k]) { puts.push(['media:' + k, await dataURLtoBlob(m[k])]); notes.push(k === 'reward' ? 'reward video' : 'button animation'); }
+  for (const k of MEDIA_KEYS) if (m[k]) { puts.push(['media:' + k, await dataURLtoBlob(m[k])]); notes.push(k === 'reward' ? 'reward video' : 'button animation'); }
   if (m.levels) for (const [n, u] of Object.entries(m.levels)) if (u) puts.push(['media:level:' + n, await dataURLtoBlob(u)]);
   if (m.levels && Object.keys(m.levels).length) notes.push('level art');
   await tx('blobs', 'readwrite', s => puts.forEach(([k, b]) => s.put(b, k)));
@@ -698,7 +715,7 @@ async function mergePool(data) {
   const notes = await applyMedia(data.media);
   words.sort((a, b) => a.order - b.order);
   const parts = [`${added} new`, `${updated} updated`]; if (skipped) parts.push(`${skipped} skipped`);
-  toast(`Pool imported · ${parts.join(' · ')}${notes.length ? ' · new ' + notes.join(', ') : ''}`, 4500);
+  toast(added || updated || skipped ? `Pool imported · ${parts.join(' · ')}${notes.length ? ' · new ' + notes.join(', ') : ''}` : `Updated: new ${notes.join(', ')}`, 4500);
   if (added) confetti(40);
   render();
 }
@@ -721,7 +738,7 @@ async function backup() {
   toast('Packing your backup…', 20000);
   const out = { format: 'wordcrown', version: 1, kind: 'backup', exported: new Date().toISOString(), settings: S, stats: ST, words: [], media: { levels: {}, levelNames: LV.names, wordsPerLevel: LV.per } };
   for (const w of words) { const b = await blobGet('img:' + w.id); out.words.push({ ...w, image: b ? await blobToDataURL(b) : '' }); }
-  for (const k of ['reward', 'know', 'recall']) { const b = await blobGet('media:' + k); if (b) out.media[k] = await blobToDataURL(b); }
+  for (const k of MEDIA_KEYS) { const b = await blobGet('media:' + k); if (b) out.media[k] = await blobToDataURL(b); }
   for (let i = 1; i <= LEVELS; i++) { const b = await blobGet('media:level:' + i); if (b) out.media.levels[i] = await blobToDataURL(b); }
   const name = `WordCrown_backup_${ymd()}.json`;
   const file = new File([JSON.stringify(out)], name, { type: 'application/json' });
@@ -761,6 +778,10 @@ async function startSession() {
   $('#session').classList.remove('hidden');
   $('#anim-know').innerHTML = (await mediaEl('know')) || '<div class="anim def-know"></div>';
   $('#anim-recall').innerHTML = (await mediaEl('recall')) || '<div class="anim def-recall"></div>';
+  const nextM = await mediaEl('next'), oopsM = await mediaEl('oops');
+  $('#anim-next').innerHTML = nextM || '<div class="anim def-know"></div><span class="lbl">Next card</span>';
+  $('#anim-oops').innerHTML = oopsM || '<div class="anim def-recall"></div><span class="lbl">Actually, I got it wrong</span>';
+  $('#next-row').classList.toggle('media', !!(nextM || oopsM));
   $('#s-cards').textContent = 0; updateTimer();
   await showCard(true);
   clearInterval(tickT); tickT = setInterval(tick, 250);
@@ -836,6 +857,40 @@ function applyResult(w, knew) {
   } else { const c = w.count || 0; w.count = Math.max(0, c - 2); out.delta = w.count - c; }
   return out;
 }
+function showOops(on) {   // plain link and video tile together; "Next card" centres itself when alone
+  $('#oops').classList.toggle('hidden', !on); $('#oops-tile').classList.toggle('hidden', !on);
+  $('#next-row').classList.toggle('solo', !on);
+}
+/* ---------- tap effect for the big tiles: press-in, gold ring + sparkles, soft click ---------- */
+let actx, tapBusy = false;
+function clickSound() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(1250, t); o.frequency.exponentialRampToValueAtTime(620, t + .07);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + .12);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + .13);
+  } catch {}
+}
+function tapFx(tile, e) {
+  const r = tile.getBoundingClientRect();
+  const x = (e.clientX || r.left + r.width / 2) - r.left, y = (e.clientY || r.top + r.height / 2) - r.top;
+  tile.classList.remove('tapped'); void tile.offsetWidth; tile.classList.add('tapped');
+  const ring = document.createElement('i'); ring.className = 'ring';
+  const d = Math.max(r.width, r.height) * 1.1; Object.assign(ring.style, { left: x + 'px', top: y + 'px', width: d + 'px', height: d + 'px' });
+  tile.appendChild(ring);
+  const fl = document.createElement('i'); fl.className = 'flash'; fl.style.cssText = `--x:${x}px;--y:${y}px`; tile.appendChild(fl);
+  for (let k = 0; k < 14; k++) {
+    const sp = document.createElement('i'); sp.className = 'spark';
+    const ang = k / 14 * Math.PI * 2 + Math.random() * .4, dist = 34 + Math.random() * 40;
+    sp.style.cssText = `left:${x - 5}px;top:${y - 5}px;--dx:${Math.cos(ang) * dist}px;--dy:${Math.sin(ang) * dist}px`;
+    tile.appendChild(sp);
+  }
+  setTimeout(() => tile.querySelectorAll('.ring,.spark,.flash').forEach(n => n.remove()), 650);
+  clickSound();
+  return new Promise(res => setTimeout(res, 170));   // let her see the press before the card changes
+}
 async function answer(knew) {
   const c = sess?.cur; if (!c || c.answered) return;
   c.answered = true; c.knew = knew; c.snap = { ...c.w }; c.lvlBefore = levelInfo().lvl;
@@ -847,7 +902,7 @@ async function answer(knew) {
   await renderBack();
   $('#card').classList.add('flipped');
   $('#ans-row').classList.add('hidden'); $('#next-row').classList.remove('hidden');
-  $('#oops').classList.toggle('hidden', !knew);
+  showOops(knew);
   if (S.autoSpeak) speak(c.w.en);
   if (c.res.mastered) { confetti(50); checkLevelUp(); }
 }
@@ -857,7 +912,7 @@ async function oops() {
   if (c.res.mastered) { day().mastered--; sess.mastered--; }
   Object.assign(c.w, c.snap); c.knew = false; c.res = applyResult(c.w, false);
   await saveWord(c.w); requeue(c.w.id); statsDirty = true;
-  await renderBack(); $('#oops').classList.add('hidden');
+  await renderBack(); showOops(false);
 }
 async function renderBack() {
   const { w, res, knew } = sess.cur;
@@ -925,6 +980,8 @@ document.addEventListener('click', async e => {
     return openWordSheet(row.dataset.id);
   }
   const a = t.closest('[data-action]')?.dataset.action; if (!a) return;
+  const tile = t.closest('.ans');
+  if (tile) { if (tapBusy) return; tapBusy = true; try { await tapFx(tile, e); } finally { tapBusy = false; } }
   switch (a) {
     case 'start': return startSession();
     case 'know': return answer(true);
@@ -1014,7 +1071,7 @@ async function syncManifest(h) {
   }
   // media: re-download only files whose path changed
   const m = man.media || {}, mOut = {}, mJobs = [];
-  for (const k of ['reward', 'know', 'recall']) if (m[k]) {
+  for (const k of MEDIA_KEYS) if (m[k]) {
     const have = await blobGet('media:' + k);
     if (!have || (src.media[k] && src.media[k] !== m[k])) mJobs.push([k, m[k], b => mOut[k] = b]); else src.media[k] = m[k];
   }
