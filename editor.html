@@ -95,8 +95,10 @@ td.num{color:var(--faint);width:44px;font-variant-numeric:tabular-nums}
 <body>
 <header>
   <div class="brand"><img src="icons/icon-192.png" alt="">WordCrown <small>Studio</small></div>
+  <button class="btn" data-a="load-site" title="Load the words, pictures and media that are on the website now">Load from site</button>
   <button class="btn" data-a="open-pool" title="Load a pool or backup file into the editor">Open pool file</button>
-  <button class="btn gold" data-a="export">Export pool</button>
+  <button class="btn" data-a="export" title="Download one pool file (for sending by Telegram)">Export pool</button>
+  <button class="btn gold" data-a="publish" title="Put the current words and media on the website">Publish to site</button>
 </header>
 <main>
   <div class="tabs"><button class="on" data-tab="words">Words</button><button data-tab="media">Media &amp; levels</button></div>
@@ -377,6 +379,9 @@ async function openPool() {
   const [f] = await pickFile('.json,application/json'); if (!f) return;
   let d; try { d = JSON.parse(await f.text()); } catch { return toast('Not a WordCrown file.'); }
   if (d.format !== 'wordcrown' || !Array.isArray(d.words)) return toast('Not a WordCrown file.');
+  await mergeIntoStudio(d);
+}
+async function mergeIntoStudio(d) {
   const mapId = new Map(words.map(w => [w.id, w])), mapEn = new Map(words.map(w => [norm(w.en), w]));
   let order = nextOrder() - 1, added = 0, updated = 0; const changed = [];
   for (const p of d.words) {
@@ -390,12 +395,143 @@ async function openPool() {
   if (d.media) {
     ['reward', 'know', 'recall'].forEach(k => { if (d.media[k]) media[k] = d.media[k]; });
     Object.assign(media.levels, d.media.levels || {});
-    if (Array.isArray(d.media.levelNames)) media.levelNames = d.media.levelNames;
+    if (Array.isArray(d.media.levelNames) && d.media.levelNames.length === LEVELS) media.levelNames = d.media.levelNames;
     if (d.media.wordsPerLevel) media.wordsPerLevel = d.media.wordsPerLevel;
     await saveMedia(); renderMedia();
   }
   words.sort((a, b) => a.order - b.order); renderWords();
   toast(`Opened · ${added} added · ${updated} updated`);
+}
+
+/* ---------- website: load from it and publish to it (GitHub) ---------- */
+// Layout on the site: content/words.json + one file per picture/video. File names carry a content
+// hash, so a changed picture gets a new name and phones download only what is new.
+const GH_DEFAULT = { owner: 'Niksky1984', repo: 'wordcrown', branch: 'main', token: '', api: 'https://api.github.com' };
+let GH = { ...GH_DEFAULT };
+const siteBase = () => GH.site || (/\.github\.io$/.test(location.hostname) ? new URL('./', location.href).href : `https://${GH.owner.toLowerCase()}.github.io/${GH.repo}/`);
+const slugify = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x';
+const EXT = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm' };
+const b64ToBytes = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+const utf8ToB64 = t => { const u = new TextEncoder().encode(t); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
+const blobToDataURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+async function hash10(bytes) { const d = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)); return [...d.slice(0, 5)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+async function fileFor(dataURL, folder, name) {
+  const m = /^data:([^;]+);base64,(.*)$/s.exec(dataURL || ''); if (!m) return null;
+  const path = `content/${folder}/${name}-${await hash10(b64ToBytes(m[2]))}.${EXT[m[1]] || 'bin'}`;
+  return { path, b64: m[2] };
+}
+// Build every file the site needs from what is in Studio now
+async function buildSite() {
+  const files = new Map(), ready = words.filter(complete);
+  const out = { format: 'wordcrown', version: 2, kind: 'site', updated: new Date().toISOString(), words: [], media: {} };
+  for (const w of ready) {
+    const f = await fileFor(w.image, 'img', slugify(w.en)); files.set(f.path, f.b64);
+    out.words.push({ id: w.id, en: w.en, ipa: w.ipa || '', ru: w.ru, example: w.example || '', updated: w.updated || 0, image: f.path });
+  }
+  for (const k of ['reward', 'know', 'recall']) if (media[k]) { const f = await fileFor(media[k], 'media', k); if (f) { files.set(f.path, f.b64); out.media[k] = f.path; } }
+  out.media.levels = {};
+  for (const [n, u] of Object.entries(media.levels || {})) if (u) { const f = await fileFor(u, 'levels', 'level-' + String(n).padStart(2, '0')); if (f) { files.set(f.path, f.b64); out.media.levels[n] = f.path; } }
+  out.media.levelNames = media.levelNames; out.media.wordsPerLevel = media.wordsPerLevel;
+  return { files, manifest: out, skipped: words.length - ready.length };
+}
+async function gh(path, opt = {}) {
+  const r = await fetch(GH.api.replace(/\/$/, '') + path, { ...opt, headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + GH.token, 'Content-Type': 'application/json', ...(opt.headers || {}) } });
+  if (!r.ok) { let msg = r.status + ''; try { msg += ' ' + (await r.json()).message; } catch {} throw new Error(msg); }
+  return r.status === 204 ? null : r.json();
+}
+const repoPath = p => `/repos/${GH.owner}/${GH.repo}${p}`;
+async function remoteTree() {
+  const ref = await gh(repoPath(`/git/ref/heads/${GH.branch}`));
+  const commit = await gh(repoPath(`/git/commits/${ref.object.sha}`));
+  const tree = await gh(repoPath(`/git/trees/${commit.tree.sha}?recursive=1`));
+  return { head: ref.object.sha, treeSha: commit.tree.sha, paths: new Set(tree.tree.filter(t => t.type === 'blob').map(t => t.path)) };
+}
+const LEGACY = p => p === 'pool.json' || p.startsWith('Princess_levels/');
+
+function settingsDialog(after) {
+  const sc = document.createElement('div'); sc.className = 'scrim';
+  sc.innerHTML = `<div class="modal" style="max-width:560px"><h2>Website settings</h2>
+    <p class="note">Studio puts your words on your GitHub site with a <b>GitHub token</b>. It is saved only in this browser on this PC, never in the files it publishes.</p>
+    <div class="field"><label>GitHub user</label><input id="g-owner" value="${esc(GH.owner)}"></div>
+    <div class="field"><label>Repository</label><input id="g-repo" value="${esc(GH.repo)}"></div>
+    <div class="field"><label>Token (starts with github_pat_)</label><input id="g-token" type="password" value="${esc(GH.token)}" placeholder="paste the token here"></div>
+    <p class="note" style="font-size:12.5px">No token yet? <a style="color:var(--gold)" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create one</a>: Repository access → <i>Only select repositories</i> → <b>wordcrown</b>; Permissions → <b>Contents: Read and write</b>.</p>
+    <div class="m-foot"><span class="msg" id="g-msg"></span><button class="btn" id="g-cancel">Cancel</button><button class="btn gold" id="g-save">Save &amp; test</button></div></div>`;
+  document.body.appendChild(sc);
+  $('#g-cancel', sc).onclick = () => sc.remove();
+  $('#g-save', sc).onclick = async () => {
+    GH = { ...GH, owner: $('#g-owner', sc).value.trim(), repo: $('#g-repo', sc).value.trim(), token: $('#g-token', sc).value.trim() };
+    $('#g-msg', sc).innerHTML = 'Testing…';
+    try { await remoteTree(); await kvSet('gh', GH); sc.remove(); toast('Connected to GitHub ✓'); if (after) after(); }
+    catch (e) { $('#g-msg', sc).innerHTML = `<span class="bad">${/401|403/.test(e.message) ? 'Token not accepted. Check it has Contents: Read and write for this repository.' : /404/.test(e.message) ? 'Repository not found. Check the user, repository name and the token’s repository access.' : esc(e.message)}</span>`; }
+  };
+}
+
+async function publishDialog() {
+  if (!GH.token) return settingsDialog(publishDialog);
+  toast('Checking the site…', 60000);
+  let site, remote;
+  try { [site, remote] = await Promise.all([buildSite(), remoteTree()]); }
+  catch (e) { $('#toast').classList.remove('on'); return /401|403|404/.test(e.message) ? settingsDialog(publishDialog) : toast('Could not reach GitHub: ' + e.message, 6000); }
+  $('#toast').classList.remove('on');
+  if (!site.manifest.words.length) return toast('No words with pictures to publish.');
+  const upload = [...site.files.keys()].filter(p => !remote.paths.has(p));
+  const remove = [...remote.paths].filter(p => (p.startsWith('content/') && !site.files.has(p) && p !== 'content/words.json') || LEGACY(p));
+  const upMB = upload.reduce((a, p) => a + site.files.get(p).length * .75, 0) / 1048576;
+  const sc = document.createElement('div'); sc.className = 'scrim';
+  sc.innerHTML = `<div class="modal" style="max-width:560px"><h2>Publish to site</h2>
+    ${site.skipped ? `<p class="bad" style="margin:0 0 12px">${site.skipped} word(s) have no picture and are left out.</p>` : ''}
+    <p class="note"><b>${site.manifest.words.length}</b> words · <b>${Object.keys(site.manifest.media.levels).length}</b> level pictures${site.manifest.media.reward ? ' · reward video' : ''}${site.manifest.media.know ? ' · button animations' : ''}</p>
+    <p class="note">New files to upload: <b>${upload.length}</b> (${upMB.toFixed(1)} MB)${remove.length ? ` · old files to remove: <b>${remove.length}</b>` : ''}</p>
+    <p class="note" style="font-size:12.5px">Her phone downloads only the new files, next time she opens WordCrown with internet. Her progress is kept.</p>
+    <div class="m-foot"><span class="msg" id="p-msg"></span><button class="btn" id="p-set">Settings</button><button class="btn" id="p-cancel">Cancel</button><button class="btn gold" id="p-go">Publish</button></div></div>`;
+  document.body.appendChild(sc);
+  $('#p-cancel', sc).onclick = () => sc.remove();
+  $('#p-set', sc).onclick = () => { sc.remove(); settingsDialog(publishDialog); };
+  $('#p-go', sc).onclick = async () => {
+    const btn = $('#p-go', sc), msg = $('#p-msg', sc); btn.disabled = true;
+    try {
+      const tree = [];
+      let n = 0, i = 0;
+      await Promise.all(Array.from({ length: 4 }, async () => { while (i < upload.length) { const p = upload[i++];
+        const b = await gh(repoPath('/git/blobs'), { method: 'POST', body: JSON.stringify({ content: site.files.get(p), encoding: 'base64' }) });
+        tree.push({ path: p, mode: '100644', type: 'blob', sha: b.sha }); msg.textContent = `Uploading ${++n}/${upload.length}…`; } }));
+      const man = await gh(repoPath('/git/blobs'), { method: 'POST', body: JSON.stringify({ content: utf8ToB64(JSON.stringify(site.manifest, null, 1)), encoding: 'base64' }) });
+      tree.push({ path: 'content/words.json', mode: '100644', type: 'blob', sha: man.sha });
+      remove.forEach(p => tree.push({ path: p, mode: '100644', type: 'blob', sha: null }));
+      msg.textContent = 'Saving…';
+      const t = await gh(repoPath('/git/trees'), { method: 'POST', body: JSON.stringify({ base_tree: remote.treeSha, tree }) });
+      const c = await gh(repoPath('/git/commits'), { method: 'POST', body: JSON.stringify({ message: `WordCrown: ${site.manifest.words.length} words (Studio)`, tree: t.sha, parents: [remote.head] }) });
+      await gh(repoPath(`/git/refs/heads/${GH.branch}`), { method: 'PATCH', body: JSON.stringify({ sha: c.sha }) });
+      lastExport = Date.now(); await kvSet('lastExport', lastExport);
+      sc.remove(); renderWords(); toast('Published ✓ The site updates in about a minute.', 6000);
+    } catch (e) { btn.disabled = false; msg.innerHTML = `<span class="bad">${esc(/409|422/.test(e.message) ? 'The site changed meanwhile. Close and publish again.' : e.message)}</span>`; }
+  };
+}
+
+// Pull what is on the website into Studio (first time on a new PC, or to start from the live version)
+async function loadFromSite() {
+  const base = siteBase();
+  if (words.length && !confirm(`Load the words and media from ${base}?\nWords with the same English word are updated; your other words stay.`)) return;
+  toast('Loading from the site…', 120000);
+  try {
+    let r = await fetch(base + 'content/words.json', { cache: 'no-cache' }), data;
+    if (r.ok) {
+      const man = await r.json(), get = async p => blobToDataURL(await (await fetch(base + p)).blob());
+      let n = 0; const all = man.words.length;
+      data = { format: 'wordcrown', words: [], media: { levels: {} } };
+      for (const p of man.words) { data.words.push({ ...p, image: await get(p.image) }); toast(`Loading from the site… ${++n}/${all}`, 120000); }
+      const m = man.media || {};
+      for (const k of ['reward', 'know', 'recall']) if (m[k]) data.media[k] = await get(m[k]);
+      for (const [lv, p] of Object.entries(m.levels || {})) data.media.levels[lv] = await get(p);
+      data.media.levelNames = m.levelNames; data.media.wordsPerLevel = m.wordsPerLevel;
+    } else {
+      r = await fetch(base + 'pool.json', { cache: 'no-cache' });
+      if (!r.ok) return toast('Nothing found on the site yet.');
+      data = await r.json();
+    }
+    await mergeIntoStudio(data);
+  } catch (e) { toast('Could not load from the site: ' + e.message, 6000); }
 }
 
 /* ---------- events ---------- */
@@ -428,6 +564,8 @@ document.addEventListener('click', async e => {
   if (a === 'template') downloadTemplate();
   if (a === 'export') exportDialog();
   if (a === 'open-pool') openPool();
+  if (a === 'load-site') loadFromSite();
+  if (a === 'publish') publishDialog();
 });
 document.addEventListener('change', async e => {
   const n = e.target.dataset?.lvname; if (n) { media.levelNames[n - 1] = e.target.value.trim() || DEFAULT_LEVEL_NAMES[n - 1]; await saveMedia(); }
@@ -445,6 +583,7 @@ document.addEventListener('drop', e => { if ($('.scrim')) return; e.preventDefau
   media = { ...media, ...((await kvGet('media')) || {}) };
   if (!Array.isArray(media.levelNames) || media.levelNames.length !== LEVELS) media.levelNames = DEFAULT_LEVEL_NAMES.slice();
   lastExport = (await kvGet('lastExport')) || 0;
+  GH = { ...GH_DEFAULT, ...((await kvGet('gh')) || {}) };
   renderWords();
 })();
 </script>

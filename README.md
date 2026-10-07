@@ -1,6 +1,6 @@
 # WordCrown
 
-English word cards for iPhone (EN ↔ RU) with images, British pronunciation, a session timer with a reward video, and a 20-level princess progression.
+English word cards for iPhone (EN ↔ RU) with images, British pronunciation, a session timer with a reward video, and a 21-level princess progression.
 
 | File | What it is |
 |---|---|
@@ -38,17 +38,17 @@ Open `editor.html` in Chrome or Edge, either from the GitHub link or by double-c
 - **Images:** click **Add images**, or drag the picture files onto the page. A file named like the word (`apple.jpg`, `ice_cream.png`) or like the Excel *Image* column is matched automatically. Images are shrunk to keep the pool light.
 - **No image, no save.** The word form will not save without an image, and words still missing one are never exported. The **No image** filter shows which words need one.
 - **Order matters** for the *First N* setting. Excel row order is study order; use ↑ ↓ to adjust.
-- **Media & levels** tab: the reward video (1:1, ~20 s, MP4 with sound), the two 16:9 button animations (GIF, animated WebP or a silent MP4), and 20 level pictures and names. Words per level defaults to 100.
+- **Media & levels** tab: the reward video (1:1, ~20 s, MP4 with sound), the two 16:9 button animations (GIF, animated WebP or a silent MP4), and 21 level pictures and names. Words per level defaults to 100.
 
 ## 4. Send words to her
 
-**Easiest: through GitHub.** The app loads `pool.json` from the site by itself every time she opens it online, and only downloads it when it has changed. Her progress is always kept.
+**Easiest: Publish from Studio.** Open Studio at `https://YOUR-NAME.github.io/wordcrown/editor.html`.
 
-1. In Studio, click **Export pool** → choose **All words** → tick *Include video…* → **Download**. The file is saved as `pool.json`.
-2. On GitHub: **Add file → Upload files** → drop `pool.json` → **Commit changes**. It replaces the old one.
-3. Next time she opens WordCrown with internet, the new words appear.
+- **One time:** click **Publish to site**. Studio asks for a GitHub token. Create it at github.com → Settings → Developer settings → *Fine-grained tokens* → **Generate new token**: Repository access → *Only select repositories* → `wordcrown`; Permissions → **Contents: Read and write**. Paste it into Studio. It stays only in this browser on this PC.
+- **On a new PC** (or if the browser was cleared): click **Load from site** first. It brings back every word, picture and media file from the website.
+- **Every time:** add or edit words → **Publish to site** → **Publish**. Done. The site updates in about a minute.
 
-Keep `pool.json` under 25 MB (GitHub's limit for web uploads).
+How it is stored: `content/words.json` lists the words; every picture and video is its own file in `content/`. File names include a fingerprint of the content, so her phone downloads **only new or changed files** the next time she opens WordCrown with internet. Her progress is always kept.
 
 **Or by hand** (no GitHub needed):
 

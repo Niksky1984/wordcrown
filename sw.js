@@ -1,5 +1,5 @@
 // WordCrown service worker: network-first so updates arrive instantly, cache fallback for offline.
-const CACHE = 'wordcrown-v1';
+const CACHE = 'wordcrown-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
@@ -14,6 +14,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  // content/ (words list, pictures, video) is stored by the app itself; don't keep a second copy here
+  if (new URL(req.url).pathname.includes('/content/')) return;
   e.respondWith(
     fetch(req).then(res => {
       if (res.status === 200) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }

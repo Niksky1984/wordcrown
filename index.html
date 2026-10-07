@@ -648,7 +648,7 @@ function renderSettings() {
 }
 
 /* ---------- import / backup ---------- */
-const dataURLtoBlob = u => fetch(u).then(r => r.blob());
+const dataURLtoBlob = u => u instanceof Blob ? Promise.resolve(u) : fetch(u).then(r => r.blob());   // accepts a Blob too (site sync)
 const blobToDataURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
 
 $('#f-import').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importFile(f); };
@@ -975,24 +975,83 @@ document.addEventListener('click', async e => {
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   syncFromSite();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromSite(); });   // iPhone apps resume instead of restarting
 })();
 
-/* ---------- auto-load pool.json published next to the app (GitHub Pages) ---------- */
-// Cheap HEAD check first; the big file is only downloaded when it changed. Merging keeps all progress.
+/* ---------- auto-load content published next to the app (GitHub Pages) ---------- */
+// New layout: content/words.json lists the words; every picture / video is its own file
+// with a content hash in its name, so only new or changed files are ever downloaded.
+// Old layout (single pool.json) is still read if content/words.json does not exist.
+let syncing = false;
 async function syncFromSite() {
-  if (!/^https?:$/.test(location.protocol)) return;
+  if (!/^https?:$/.test(location.protocol) || syncing || sess) return;   // never interrupt a running session
+  syncing = true;
   try {
-    const h = await fetch('pool.json', { method: 'HEAD', cache: 'no-cache' });
-    if (!h.ok) return;
-    const tag = h.headers.get('etag') || h.headers.get('last-modified') || h.headers.get('content-length') || '';
-    if (tag && tag === await kvGet('sitePoolTag')) return;
-    toast('Loading new words…', 30000);
-    const data = await (await fetch('pool.json', { cache: 'no-cache' })).json();
-    if (!data || data.format !== 'wordcrown' || !Array.isArray(data.words)) return $('#toast').classList.remove('on');
-    if (data.exported && data.exported === await kvGet('sitePoolExported')) { await kvSet('sitePoolTag', tag); return $('#toast').classList.remove('on'); }
-    await mergePool(data);
-    await kvSet('sitePoolTag', tag); await kvSet('sitePoolExported', data.exported || '');
-  } catch (err) { console.warn('pool.json sync skipped', err); }
+    const h = await fetch('content/words.json', { method: 'HEAD', cache: 'no-cache' });
+    if (h.ok) await syncManifest(h); else await syncLegacyPool();
+  } catch (err) { console.warn('site sync skipped', err); }
+  finally { syncing = false; }
+}
+const headTag = h => h.headers.get('etag') || h.headers.get('last-modified') || h.headers.get('content-length') || '';
+async function fetchBlob(path) { const r = await fetch(path); if (!r.ok) throw new Error(path + ' ' + r.status); return r.blob(); }
+async function pooled(items, n, fn) { let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; await fn(items[k], k); } })); }
+
+async function syncManifest(h) {
+  const tag = headTag(h);
+  if (tag && tag === await kvGet('siteTag')) return;
+  const man = await (await fetch('content/words.json', { cache: 'no-cache' })).json();
+  if (!man || man.format !== 'wordcrown' || !Array.isArray(man.words)) return;
+  const src = (await kvGet('siteSrc')) || { words: {}, media: {} };
+  const byIdLocal = new Map(words.map(w => [w.id, w]));
+  // which words need work: new, edited, new picture, or picture missing locally
+  const todo = [];
+  for (const p of man.words) {
+    if (!p.en || !p.ru || !p.image) continue;
+    const w = byIdLocal.get(p.id), hasImg = w && await blobGet('img:' + w.id);
+    const imgChanged = !hasImg || (src.words[p.id] && src.words[p.id] !== p.image);
+    if (!w || imgChanged || (w.updated || 0) !== (p.updated || 0)) todo.push({ p, imgChanged, w });
+    else src.words[p.id] = p.image;
+  }
+  // media: re-download only files whose path changed
+  const m = man.media || {}, mOut = {}, mJobs = [];
+  for (const k of ['reward', 'know', 'recall']) if (m[k]) {
+    const have = await blobGet('media:' + k);
+    if (!have || (src.media[k] && src.media[k] !== m[k])) mJobs.push([k, m[k], b => mOut[k] = b]); else src.media[k] = m[k];
+  }
+  for (const [n, path] of Object.entries(m.levels || {})) if (path) {
+    const key = 'level:' + n, have = await blobGet('media:' + key);
+    if (!have || (src.media[key] && src.media[key] !== path)) mJobs.push([key, path, b => (mOut.levels = mOut.levels || {})[n] = b]); else src.media[key] = path;
+  }
+  const namesChanged = Array.isArray(m.levelNames) && JSON.stringify(m.levelNames) !== JSON.stringify(LV.names);
+  const perChanged = m.wordsPerLevel > 0 && +m.wordsPerLevel !== LV.per;
+  if (!todo.length && !mJobs.length && !namesChanged && !perChanged) { await kvSet('siteSrc', src); await kvSet('siteTag', tag); return; }
+  const total = todo.filter(t => t.imgChanged).length + mJobs.length; let done = 0;
+  const tick = () => total && toast(`Loading new words… ${done}/${total}`, 60000);
+  tick();
+  await pooled(todo, 6, async t => {
+    if (t.imgChanged) { t.p = { ...t.p, image: await fetchBlob(t.p.image) }; done++; tick(); }
+    else t.p = { ...t.p, image: await blobGet('img:' + t.w.id) };
+  });
+  await pooled(mJobs, 3, async ([k, path, put]) => { put(await fetchBlob(path)); done++; tick(); });
+  if (namesChanged) mOut.levelNames = m.levelNames;
+  if (perChanged) mOut.wordsPerLevel = m.wordsPerLevel;
+  await mergePool({ words: todo.map(t => t.p), media: Object.keys(mOut).length ? mOut : null });
+  for (const t of todo) src.words[t.p.id] = man.words.find(x => x.id === t.p.id).image;
+  for (const [k, path] of mJobs) src.media[k] = path;
+  await kvSet('siteSrc', src); await kvSet('siteTag', tag);
+}
+
+async function syncLegacyPool() {
+  const h = await fetch('pool.json', { method: 'HEAD', cache: 'no-cache' });
+  if (!h.ok) return;
+  const tag = headTag(h);
+  if (tag && tag === await kvGet('sitePoolTag')) return;
+  toast('Loading new words…', 30000);
+  const data = await (await fetch('pool.json', { cache: 'no-cache' })).json();
+  if (!data || data.format !== 'wordcrown' || !Array.isArray(data.words)) return $('#toast').classList.remove('on');
+  if (data.exported && data.exported === await kvGet('sitePoolExported')) { await kvSet('sitePoolTag', tag); return $('#toast').classList.remove('on'); }
+  await mergePool(data);
+  await kvSet('sitePoolTag', tag); await kvSet('sitePoolExported', data.exported || '');
 }
 </script>
 </body>
