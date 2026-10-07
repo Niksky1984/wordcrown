@@ -2,7 +2,7 @@
  "format": "wordcrown",
  "version": 2,
  "kind": "site",
- "updated": "2026-10-07T20:05:44.753Z",
+ "updated": "2026-10-07T22:15:37.536Z",
  "words": [
   {
    "id": "e42f47c3-c01c-5be2-a3e2-fda05dc4f434",
@@ -864,6 +864,8 @@
   "reward": "content/media/reward-a23a29742b.mp4",
   "know": "content/media/know-f8ae00cc0e.gif",
   "recall": "content/media/recall-19f59c345d.gif",
+  "next": "content/media/next-55aa068465.mp4",
+  "oops": "content/media/oops-f2c9093e60.mp4",
   "levels": {
    "1": "content/levels/level-01-adf285df61.webp",
    "2": "content/levels/level-02-1a6ae5406b.webp",
