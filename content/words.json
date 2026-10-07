@@ -2,7 +2,7 @@
  "format": "wordcrown",
  "version": 2,
  "kind": "site",
- "updated": "2026-10-07T19:32:23.977Z",
+ "updated": "2026-10-07T20:05:44.753Z",
  "words": [
   {
    "id": "e42f47c3-c01c-5be2-a3e2-fda05dc4f434",
@@ -633,6 +633,231 @@
    "example": "Old buildings are part of our heritage.",
    "updated": 1790966525376,
    "image": "content/img/heritage-70f84a3771.webp"
+  },
+  {
+   "id": "ddbe0e74-91f2-43d6-8a2e-2ffe0b676879",
+   "en": "conceived",
+   "ipa": "/kənˈsiːvd/",
+   "ru": "задуманный",
+   "example": "The museum was conceived as a home for the old boat.",
+   "updated": 1791403492594,
+   "image": "content/img/conceived-5b9399f580.webp"
+  },
+  {
+   "id": "0f440269-d872-41b1-bb1c-2b28ba3ec466",
+   "en": "scheme",
+   "ipa": "/skiːm/",
+   "ru": "план, схема",
+   "example": "The town had a scheme to build a new museum.",
+   "updated": 1791403493429,
+   "image": "content/img/scheme-f13f50035d.webp"
+  },
+  {
+   "id": "d23f51ce-5d0b-4aab-84f4-1102ce70aab8",
+   "en": "include",
+   "ipa": "/ɪnˈkluːd/",
+   "ru": "включать, содержать в себе",
+   "example": "The tour will include a visit to the castle.",
+   "updated": 1791403493023,
+   "image": "content/img/include-f479ca6592.webp"
+  },
+  {
+   "id": "5fe5accf-f729-4514-8b2c-25ecb71a711b",
+   "en": "exhibition",
+   "ipa": "/ˌeksɪˈbɪʃn/",
+   "ru": "выставка",
+   "example": "We saw the boat at a special exhibition.",
+   "updated": 1791403492833,
+   "image": "content/img/exhibition-f7c8112644.webp"
+  },
+  {
+   "id": "95f8db3e-022e-4277-8995-b1dbc17a0b09",
+   "en": "extensive",
+   "ipa": "/ɪkˈstensɪv/",
+   "ru": "обширный",
+   "example": "The library has an extensive collection of maps.",
+   "updated": 1791403492884,
+   "image": "content/img/extensive-e6ce8128f6.webp"
+  },
+  {
+   "id": "b4738bf0-243d-42b2-8fec-ac408285d6e9",
+   "en": "educational",
+   "ipa": "/ˌedʒuˈkeɪʃənl/",
+   "ru": "образовательный",
+   "example": "The museum has a fun educational game for children.",
+   "updated": 1791403492739,
+   "image": "content/img/educational-934f84bd34.webp"
+  },
+  {
+   "id": "42f1d254-274d-46e9-9a5b-4a75e7a46e32",
+   "en": "support",
+   "ipa": "/səˈpɔːt/",
+   "ru": "поддержка",
+   "example": "Thank you for your support.",
+   "updated": 1791403493478,
+   "image": "content/img/support-5136f16c83.webp"
+  },
+  {
+   "id": "3bf088fc-4f7d-4d0c-84a2-ee554c939f34",
+   "en": "held",
+   "ipa": "/held/",
+   "ru": "проведён, проходил",
+   "example": "The meeting was held in the town hall.",
+   "updated": 1791403492977,
+   "image": "content/img/held-72447f986d.webp"
+  },
+  {
+   "id": "2e937b97-235a-42ef-b313-f954aeabde1e",
+   "en": "confirmed",
+   "ipa": "/kənˈfɜːmd/",
+   "ru": "подтверждённый",
+   "example": "The teacher confirmed that the test is on Friday.",
+   "updated": 1791403492639,
+   "image": "content/img/confirmed-450e75f0a3.webp"
+  },
+  {
+   "id": "d1c37d70-f3ab-4363-8a50-7556b27a968d",
+   "en": "full-scale",
+   "ipa": "/ˌfʊl ˈskeɪl/",
+   "ru": "полномасштабный",
+   "example": "They built a full-scale copy of the ancient boat.",
+   "updated": 1791403492931,
+   "image": "content/img/full-scale-0dfaceed5c.webp"
+  },
+  {
+   "id": "b765e539-4b31-46f4-a567-81c8b0da896c",
+   "en": "primarily",
+   "ipa": "/ˈpraɪmərəli/",
+   "ru": "в первую очередь, главным образом",
+   "example": "This book is primarily for young readers.",
+   "updated": 1791403493320,
+   "image": "content/img/primarily-c056e0368a.webp"
+  },
+  {
+   "id": "5756a844-9850-42f7-872e-793db1aaffc2",
+   "en": "tools",
+   "ipa": "/tuːlz/",
+   "ru": "инструменты",
+   "example": "The builders used simple bronze tools.",
+   "updated": 1791403493621,
+   "image": "content/img/tools-9738d519d4.webp"
+  },
+  {
+   "id": "c8a7d882-42d4-461c-b883-6a03ce5327a0",
+   "en": "performed",
+   "ipa": "/pəˈfɔːmd/",
+   "ru": "выполнен, исполнен",
+   "example": "The song was performed by the school choir.",
+   "updated": 1791403493222,
+   "image": "content/img/performed-ca332d63be.webp"
+  },
+  {
+   "id": "23c75c12-eafd-4892-af88-20207ce53cbe",
+   "en": "carve",
+   "ipa": "/kɑːv/",
+   "ru": "вырезать (по дереву, камню)",
+   "example": "He likes to carve small animals from wood.",
+   "updated": 1791403492444,
+   "image": "content/img/carve-e776165c55.webp"
+  },
+  {
+   "id": "930055f2-be4d-4752-858e-d1d1a8560141",
+   "en": "decided",
+   "ipa": "/dɪˈsaɪdɪd/",
+   "ru": "решил, решённый",
+   "example": "We decided to go to the beach.",
+   "updated": 1791403492689,
+   "image": "content/img/decided-4c68ea57a7.webp"
+  },
+  {
+   "id": "262819cc-cf1b-44b2-b074-375ea68fa69e",
+   "en": "owing to",
+   "ipa": "/ˈəʊɪŋ tuː/",
+   "ru": "из-за, благодаря",
+   "example": "The trip was cancelled owing to the storm.",
+   "updated": 1791403493173,
+   "image": "content/img/owing-to-e180cd21ef.webp"
+  },
+  {
+   "id": "1754db7e-968b-4351-b43f-4308af31115d",
+   "en": "tight",
+   "ipa": "/taɪt/",
+   "ru": "плотный, тугой",
+   "example": "These shoes are too tight for me.",
+   "updated": 1791403493574,
+   "image": "content/img/tight-85780faa82.webp"
+  },
+  {
+   "id": "28f89647-e40e-4eb2-9a2c-d0f3c21a51b7",
+   "en": "meanwhile",
+   "ipa": "/ˈmiːnwaɪl/",
+   "ru": "тем временем",
+   "example": "Mum cooked dinner. Meanwhile, I set the table.",
+   "updated": 1791403493126,
+   "image": "content/img/meanwhile-2c46bc0055.webp"
+  },
+  {
+   "id": "4a897fdc-a244-42b8-b79d-4c80d900ca8d",
+   "en": "prepared",
+   "ipa": "/prɪˈpeəd/",
+   "ru": "подготовленный, готовый",
+   "example": "She was well prepared for the exam.",
+   "updated": 1791403493269,
+   "image": "content/img/prepared-a0c8ccc6cb.webp"
+  },
+  {
+   "id": "c9990d3f-3501-452e-91ad-bfc96c38fc22",
+   "en": "entitles",
+   "ipa": "/ɪnˈtaɪtlz/",
+   "ru": "даёт право",
+   "example": "This ticket entitles you to a free drink.",
+   "updated": 1791403492786,
+   "image": "content/img/entitles-df526f18a5.webp"
+  },
+  {
+   "id": "4a6d5fb1-ae64-4b70-b740-256a15986bb1",
+   "en": "remarkable",
+   "ipa": "/rɪˈmɑːkəbl/",
+   "ru": "замечательный, выдающийся",
+   "example": "It was a remarkable discovery.",
+   "updated": 1791403493376,
+   "image": "content/img/remarkable-48b8646676.webp"
+  },
+  {
+   "id": "e5d1680e-39e0-4fbc-a59a-e7c1af319d99",
+   "en": "including",
+   "ipa": "/ɪnˈkluːdɪŋ/",
+   "ru": "включая",
+   "example": "Everyone came, including my grandma.",
+   "updated": 1791403493079,
+   "image": "content/img/including-35e8071776.webp"
+  },
+  {
+   "id": "8924018c-0966-476c-a51b-a700cc72a2b8",
+   "en": "treasure",
+   "ipa": "/ˈtreʒə/",
+   "ru": "сокровище",
+   "example": "The pirates buried their treasure on an island.",
+   "updated": 1791403493670,
+   "image": "content/img/treasure-f7cd387876.webp"
+  },
+  {
+   "id": "64b1e86a-390c-47b5-b447-00a5a5fea266",
+   "en": "symbol",
+   "ipa": "/ˈsɪmbl/",
+   "ru": "символ",
+   "example": "The crown is a symbol of the queen.",
+   "updated": 1791403493529,
+   "image": "content/img/symbol-25606df26f.webp"
+  },
+  {
+   "id": "ece62340-59fe-4a11-8033-28b3475fee5a",
+   "en": "centerpiece",
+   "ipa": "/ˈsentəpiːs/",
+   "ru": "центральный элемент",
+   "example": "The old boat is the centerpiece of the museum.",
+   "updated": 1791403492547,
+   "image": "content/img/centerpiece-f6b1a6f32d.webp"
   }
  ],
  "media": {
