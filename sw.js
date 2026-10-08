@@ -1,5 +1,5 @@
 // WordCrown service worker: network-first so updates arrive instantly, cache fallback for offline.
-const CACHE = 'wordcrown-v2';
+const CACHE = 'wordcrown-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
@@ -17,7 +17,8 @@ self.addEventListener('fetch', e => {
   // content/ (words list, pictures, video) is stored by the app itself; don't keep a second copy here
   if (new URL(req.url).pathname.includes('/content/')) return;
   e.respondWith(
-    fetch(req).then(res => {
+    // no-cache: always ask GitHub if the file changed (cheap), instead of trusting the browser's 10-minute cache
+    fetch(req, { cache: 'no-cache' }).then(res => {
       if (res.status === 200) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req, { ignoreSearch: true })
