@@ -189,6 +189,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 .res{position:absolute;top:14px;right:14px;z-index:2;font-weight:800;font-size:13px;padding:7px 11px;border-radius:99px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .res.up{background:rgba(236,191,122,.9);color:#24170a}
 .res.down{background:rgba(242,160,186,.92);color:#2a0f19}
+.chk{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.chk-kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--gold)}
+.chk-q{font-family:var(--serif);font-size:clamp(30px,9vw,44px);line-height:1.1;word-break:break-word}
+.chk-sub{font-size:14px;color:var(--muted);margin-top:-6px}
+.chk-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:6px}
+.opt{min-height:62px;padding:10px 8px;border-radius:16px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);font-weight:700;font-size:16px;line-height:1.2;transition:transform .12s,background .2s,border-color .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.opt:active{transform:scale(.95)}
+.opt.ok{background:rgba(120,220,170,.22);border-color:#86e3bd;animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.opt.no{background:rgba(255,120,140,.2);border-color:#ff9aaa;animation:shake .35s}
+.opt.dim{opacity:.35}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.chk-pics .opt{padding:0;min-height:0;aspect-ratio:4/3;overflow:hidden}
+.chk-pics .opt img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.chk-pics .opt.ok,.chk-pics .opt.no{border-width:3px}
+.chk-unsure{font-size:13.5px;color:var(--faint);font-weight:600;padding:8px}
+.chk>*{flex-shrink:0}
+.chk-pic{flex-shrink:1;min-height:56px;height:min(24vh,172px);max-width:62%;aspect-ratio:4/3;border-radius:16px;object-fit:cover;box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+.chk-in{width:100%;height:56px;border-radius:16px;border:1.5px solid rgba(236,191,122,.45);background:rgba(255,255,255,.06);color:var(--text);font-size:22px;text-align:center;font-family:var(--serif);outline:none}
+.chk-in.ok{border-color:#86e3bd;background:rgba(120,220,170,.15)}
+.chk-in.no{border-color:#ff9aaa;background:rgba(255,120,140,.12);animation:shake .35s}
+.chk-hint{font-size:13px;color:var(--muted)}
+.chk-msg{font-weight:700;min-height:20px;font-size:15px}
+.chk-msg.ok{color:#86e3bd}.chk-msg.no{color:#ff9aaa}
+.chk .primary{height:52px}
 .res.win{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#24170a;animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pop{0%{transform:scale(.3)}100%{transform:scale(1)}}
 .b-body{flex:1;overflow-y:auto;padding:4px 20px 18px;display:flex;flex-direction:column;gap:12px}
@@ -361,7 +385,7 @@ let ST = { days: {} };     // stats
 let LV = { names: DEFAULT_LEVEL_NAMES.slice(), per: 100 };
 const imgCache = new Map(); // key -> objectURL
 let tab = 'home', wordFilter = 'all', wordQuery = '', pickMode = false, wordLimit = 120;
-const DEFAULTS = { name: '', minutes: 15, direction: 'mix', scope: 'all', firstN: 10, target: 5, autoSpeak: true, voiceURI: '', rate: 0.9, picked: [], maxLevelSeen: 1 };
+const DEFAULTS = { name: '', minutes: 15, direction: 'mix', scope: 'all', firstN: 10, target: 5, autoSpeak: true, voiceURI: '', rate: 0.9, picked: [], maxLevelSeen: 1, checks: 'some' };
 
 const byId = id => words.find(w => w.id === id);
 const status = w => w.learned ? 'learned' : (w.seen ? 'progress' : 'new');
@@ -642,6 +666,8 @@ function renderSettings() {
         <div class="seg" style="margin:10px 0 0">${[['all', 'All'], ['picked', 'Picked'], ['first', 'First N']].map(([v, l]) => `<button data-set="scope" data-v="${v}" class="${S.scope === v ? 'on' : ''}">${l}</button>`).join('')}</div>
         ${S.scope === 'first' ? `<div class="mini-chips">${[10, 15, 20, 30].map(n => `<button data-set="firstN" data-v="${n}" class="${S.firstN === n ? 'on' : ''}">${n}</button>`).join('')}<input type="number" id="s-firstN" min="1" max="999" inputmode="numeric" placeholder="Custom" value="${[10, 15, 20, 30].includes(S.firstN) ? '' : S.firstN}"></div>` : ''}
         ${S.scope === 'picked' ? `<button class="ghost" style="margin-top:10px;height:44px" data-action="goto-pick">Pick words</button>` : ''}</div>
+      <div class="set-row col"><span class="lab">Checks<div class="hint">After "I know it", a quick exercise proves it: choose the translation, pick the picture you hear, or spell the word. The last step to "Learned" is always checked.</div></span>
+        <div class="seg" style="margin:10px 0 0">${[['off', 'Off'], ['some', 'Some'], ['most', 'Most']].map(([v, l]) => `<button data-set="checks" data-v="${v}" class="${(S.checks || 'some') === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
       <div class="set-row"><span class="lab">Repetitions to learn<div class="hint">Correct answers needed. A miss costs 2.</div></span>
         <div class="stepper"><button data-action="t-dn">−</button><b>${S.target}</b><button data-action="t-up">+</button></div></div></div></div>
 
@@ -891,8 +917,102 @@ function tapFx(tile, e) {
   clickSound();
   return new Promise(res => setTimeout(res, 170));   // let her see the press before the card changes
 }
-async function answer(knew) {
-  const c = sess?.cur; if (!c || c.answered) return;
+/* ---------- checks: prove "I know it" with a quick exercise ---------- */
+// choose = pick the translation · listen = hear the word, pick the picture · spell = type the English word.
+// The step that would make a word "Learned" always needs a passed check (unless checks are Off).
+function sfx(kind) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+    const t0 = actx.currentTime, notes = kind === 'good' ? [[880, 0], [1320, .09]] : [[300, 0], [220, .12]];
+    for (const [f, d] of notes) {
+      const o = actx.createOscillator(), g = actx.createGain(), t = t0 + d;
+      o.type = kind === 'good' ? 'sine' : 'triangle'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(kind === 'good' ? .25 : .16, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .28);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + .3);
+    }
+  } catch {}
+}
+function pickCheck(c) {
+  const mode = S.checks || 'some'; if (mode === 'off') return null;
+  const w = c.w, gate = !w.learned && (w.count || 0) + 1 >= S.target;
+  if (!gate && Math.random() >= (mode === 'most' ? .8 : .5)) return null;
+  const types = [];
+  if (words.length >= 4) types.push('choose', 'listen');
+  const nearly = gate || w.learned || (w.count || 0) >= S.target - 2;
+  if (c.dir === 'ru' && w.en.length <= 24 && nearly) types.push('spell', 'spell');   // she hasn't seen the English yet
+  return types.length ? types[Math.floor(Math.random() * types.length)] : null;
+}
+function distractors(w, n, key) {
+  const seen = new Set([norm(w[key])]), out = [];
+  for (const x of shuffle(words.filter(x => x.id !== w.id))) { const k = norm(x[key]); if (!k || seen.has(k)) continue; seen.add(k); out.push(x); if (out.length === n) break; }
+  return out;
+}
+const spellNorm = s => String(s || '').toLowerCase().replace(/[’'`]/g, "'").replace(/[-‐–]/g, ' ').replace(/[^a-z' ]/g, '').replace(/\s+/g, ' ').trim();
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+async function startCheck(c, type) {
+  c.checking = type; c.tries = 0;
+  const w = c.w;
+  $('#ans-row').classList.add('hidden');
+  const unsure = '<button class="chk-unsure" data-action="chk-unsure">I\'m not sure</button>';
+  let html;
+  if (type === 'choose') {
+    const key = c.dir === 'en' ? 'ru' : 'en';
+    c.opts = shuffle([w, ...distractors(w, 3, key)]);
+    html = `<div class="chk-kick">Check · choose the ${c.dir === 'en' ? 'translation' : 'English word'}</div>
+      <div class="chk-q">${esc(c.dir === 'en' ? w.en : w.ru)}</div>${c.dir === 'en' && w.ipa ? `<div class="chk-sub">${esc(w.ipa)}</div>` : ''}
+      <div class="chk-opts">${c.opts.map((o, i) => `<button class="opt" data-action="chk-pick" data-i="${i}">${esc(o[key])}</button>`).join('')}</div>${unsure}`;
+  } else if (type === 'listen') {
+    c.opts = shuffle([w, ...distractors(w, 3, 'en')]);
+    const urls = await Promise.all(c.opts.map(o => imgURL('img:' + o.id)));
+    html = `<div class="chk-kick">Check · listen and choose the picture</div>
+      <button class="speak" style="margin:0" data-action="say-word">${SPK}</button>
+      <div class="chk-opts chk-pics">${c.opts.map((o, i) => `<button class="opt" data-action="chk-pick" data-i="${i}" aria-label="picture ${i + 1}">${urls[i] ? `<img src="${urls[i]}" alt="">` : esc(o.en)}</button>`).join('')}</div>${unsure}`;
+  } else {
+    const u = await imgURL('img:' + w.id), ans = w.en.trim();
+    html = `<div class="chk-kick">Check · spell it in English</div>
+      ${u ? `<img class="chk-pic" src="${u}" alt="">` : ''}
+      <div class="chk-q" style="font-size:clamp(24px,7vw,32px)">${esc(w.ru)}</div>
+      <input class="chk-in" id="chk-in" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="type the word">
+      <div class="chk-hint">Starts with <b>${esc(ans[0])}</b> · ${ans.replace(/[^A-Za-z]/g, '').length} letters${/\s/.test(ans) ? ` · ${ans.split(/\s+/).length} words` : ''}</div>
+      <div class="chk-msg" id="chk-msg"></div>
+      <button class="primary" data-action="chk-spell">Check</button>${unsure}`;
+  }
+  $('#front').innerHTML = `<div class="chk">${html}</div>`;
+  if (type === 'listen') setTimeout(() => speak(w.en), 250);
+  if (type === 'spell') { const inp = $('#chk-in'); inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkSpell(); } }); }
+}
+async function finishCheck(ok, delay) {
+  const c = sess?.cur; if (!c || !c.checking) return;
+  c.checking = null; c.verified = true;
+  sfx(ok ? 'good' : 'bad');
+  await new Promise(r => setTimeout(r, delay));
+  if (sess?.cur === c) await answer(ok, true);
+}
+function pickOption(i) {
+  const c = sess?.cur; if (!c || !c.checking || c.picked) return;
+  c.picked = true;
+  const btns = [...document.querySelectorAll('#front .opt')], right = c.opts.findIndex(o => o.id === c.w.id), ok = +i === right;
+  btns.forEach((b, k) => b.classList.add(k === right ? 'ok' : k === +i ? 'no' : 'dim'));
+  finishCheck(ok, ok ? 650 : 1500);
+}
+function checkSpell() {
+  const c = sess?.cur; if (!c || c.checking !== 'spell') return;
+  const inp = $('#chk-in'), msg = $('#chk-msg'), want = spellNorm(c.w.en), got = spellNorm(inp.value);
+  if (!got) { inp.focus(); return; }
+  if (got === want) { inp.classList.add('ok'); msg.className = 'chk-msg ok'; msg.textContent = 'Perfect!'; inp.blur(); return finishCheck(true, 700); }
+  const close = lev(got, want) <= (want.length >= 9 ? 2 : want.length >= 4 ? 1 : 0);
+  if (close && !c.tries) { c.tries = 1; inp.classList.remove('no'); void inp.offsetWidth; inp.classList.add('no'); msg.className = 'chk-msg no'; msg.textContent = 'Almost! Check the spelling and try again.'; sfx('bad'); return; }
+  inp.classList.add('no'); inp.blur(); msg.className = 'chk-msg no'; msg.innerHTML = `It's <b>${esc(c.w.en)}</b>`;
+  finishCheck(false, 1700);
+}
+async function answer(knew, verified = false) {
+  const c = sess?.cur; if (!c || c.answered || c.checking) return;
+  if (knew && !verified) { const type = pickCheck(c); if (type) return startCheck(c, type); }
   c.answered = true; c.knew = knew; c.snap = { ...c.w }; c.lvlBefore = levelInfo().lvl;
   c.res = applyResult(c.w, knew);
   if (c.res.mastered) { day().mastered++; sess.mastered++; }
@@ -902,7 +1022,7 @@ async function answer(knew) {
   await renderBack();
   $('#card').classList.add('flipped');
   $('#ans-row').classList.add('hidden'); $('#next-row').classList.remove('hidden');
-  showOops(knew);
+  showOops(knew && !c.verified);   // a passed check needs no "Actually, I got it wrong"
   if (S.autoSpeak) speak(c.w.en);
   if (c.res.mastered) { confetti(50); checkLevelUp(); }
 }
@@ -922,6 +1042,7 @@ async function renderBack() {
   else if (res.kept) chip = '<span class="res up">Still yours ✦</span>';
   else if (res.demoted) chip = '<span class="res down">Back to practice</span>';
   else chip = knew ? '<span class="res up">+1</span>' : `<span class="res down">${res.delta ? res.delta : 'Next time'}</span>`;
+  if (sess.cur.verified && knew) chip = chip.replace('</span>', ' ✓</span>');
   const pips = Array.from({ length: S.target }, (_, i) => `<i class="${w.learned || i < (w.count || 0) ? 'on' : ''}"></i>`).join('');
   $('#back').innerHTML = `<div class="b-img">${u ? `<img src="${u}" alt="">` : ''}${chip}</div>
     <div class="b-body">
@@ -988,6 +1109,9 @@ document.addEventListener('click', async e => {
     case 'recall': return answer(false);
     case 'next': return showCard();
     case 'oops': return oops();
+    case 'chk-pick': clickSound(); return pickOption(t.closest('[data-i]').dataset.i);
+    case 'chk-spell': return checkSpell();
+    case 'chk-unsure': { const c = sess?.cur; if (!c?.checking) return; if (c.checking === 'spell') { $('#chk-msg').className = 'chk-msg no'; $('#chk-msg').innerHTML = `It's <b>${esc(c.w.en)}</b>`; } else { const r = c.opts.findIndex(o => o.id === c.w.id); document.querySelectorAll('#front .opt').forEach((b, k) => b.classList.add(k === r ? 'ok' : 'dim')); } return finishCheck(false, 1500); }
     case 'say-word': return speak(sess?.cur?.w.en);
     case 'say-ex': return speak(sess?.cur?.w.example);
     case 'end-session':

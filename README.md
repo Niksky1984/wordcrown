@@ -64,6 +64,7 @@ New words are added, edited words are updated, and **her progress is never lost*
 - She chooses a session length from 5 to 45 min, then taps **Begin session**.
 - The card shows the English word with IPA and a 🔊 button, or the Russian word (direction: EN→RU, RU→EN or Mix).
 - She taps **I know it** or **I can't recall**. The card flips to show the translation, the picture, an example sentence (with 🔊) and her progress pips.
+- **Checks:** after *I know it*, a quick exercise sometimes asks her to prove it: **choose the translation** (4 options), **listen and choose the picture**, or **spell the English word** (only when the card showed Russian). A small typo gets one more try. *I'm not sure* counts as a miss. The step that would make a word **Learned** is always checked. Settings → Checks: Off / Some (about half the cards) / Most.
 - A correct answer is **+1**; a miss is **−2**. At **5** (adjustable 2–10) the word becomes **Learned**. If she was too optimistic, *Actually, I got it wrong* fixes it.
 - Learned words come back for review after 2, 5, 12, 30, 60 and 120 days. Missing a review sends the word back to practice.
 - Words to study: **All** (20 in rotation at a time), **Picked** (chosen in the Words tab with *Select*), or **First N** (10/15/20/30/custom; when one is learned, the next joins).
